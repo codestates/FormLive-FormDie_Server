@@ -1,0 +1,27 @@
+{
+  "name": "yangsikdang",
+  "version": "1.0.0",
+  "description": "yangsikdang",
+  "main": "index.js",
+  "engine": {
+    "node": "10.16.0",
+    "npm": "6.9.0"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "backend": "nodemon server/index.js"
+  },
+  "author": "formlive-formdie",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cookie-parser": "^1.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "mongoose": "^5.4.20"
+  },
+  "devDependencies": {
+    "concurrently": "^4.1.0",
+    "nodemon": "^1.19.1"
+  }
+}

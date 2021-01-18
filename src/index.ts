@@ -7,6 +7,18 @@ import * as dotenv from 'dotenv';
 import * as passport from 'passport';
 import * as hpp from 'hpp';
 import * as helmet from 'helmet';
+
+import authRouter from './routes/auth';
+import formRouter from './routes/form';
+import groupRouter from './routes/group';
+import historyRouter from './routes/history';
+import suggestionRouter from './routes/suggestion';
+import userRouter from './routes/user';
+
+import "reflect-metadata";
+import { createConnection } from "typeorm";
+createConnection();
+
 dotenv.config();
 const app = express();
 const prod = process.env.NODE_ENV === 'production';
@@ -46,16 +58,17 @@ app.use(passport.session());
 app.get('/', (req, res, next) => {
     res.send('테스트');
 });
-app.use('/user');
-app.use('/form');
-app.use('/group');
-app.use('/history');
-app.use('/suggestion');
-app.use('/auth');
+app.use('/user', userRouter);
+app.use('/form', formRouter);
+app.use('/group', groupRouter);
+app.use('/history', historyRouter);
+app.use('/suggestion', suggestionRouter);
+app.use('/auth', authRouter);
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
     console.log(`Server Running at ${port}`);
 });
+
 // certificate;
 // const privateKey = fs.readFileSync(
 //   "/etc/letsencrypt/live/yangsikdang.ml/privkey.pem",

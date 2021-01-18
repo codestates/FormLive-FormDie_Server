@@ -8,7 +8,8 @@
       "npm": "6.14.10"
    },
    "scripts": {
-      "start": "ts-node src/index.ts"
+      "start": "ts-node src/index.ts",
+      "startjs": "nodemon dist/index.js"
    },
    "author": "formlive-formdie",
    "license": "ISC",

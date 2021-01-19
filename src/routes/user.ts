@@ -17,16 +17,46 @@ import { User } from "../entity/User";
 //             .andWhere("user.password = :password", { password })
 //             .getMany();
 //     }
-
 // }
 //const newUsers = await userModel.find({ isActive: true });
 //const timber = await userModel.findOne({ firstName: "Timber", lastName: "Saw" });
 //
 const router = express.Router();
 
-router.get('', async (req, res, next) => {
+/**
+ * 회원정보 받아오기
+ * req: req.session.passport.user
+ * res: user. id, email, name, profileIconURL, isAdmin
+ */
+router.get('/', async (req, res, next) => {
+  try {
+    //일단, 사전에 세션 아이디 여부를 검증합니다.
+    const exUser = await createQueryBuilder("user")
+      .where("user.id = :id", { id: req.session.passport.user })
+      .execute();
+    //console.log(exUser); 유저가 존재하면,[]가 뜬다.
+    if (exUser.length !== 0) {
+      const getUser = await createQueryBuilder("user")
+        .where("user.id = :id", { id: req.session.passport.user })
+        .execute();
+      return res.status(200).send( //01.19 저녁 meeting. RowDataPacket 가공하여 send로 변경.
+        {
+          id: getUser[0].User_id,
+          email: getUser[0].User_email,
+          name: getUser[0].User_name,
+          profileIconURL: getUser[0].User_profileIconURL,
+          isAdmin: getUser[0].User_isAdmin
+        }
+      );
+    }
+  } catch (e) {
+    console.error(e);
+    // 에러 처리를 여기서
+    return next(e);
+  }
 
 });
+
 /**
  * 회원가입(로컬)
  * req: email, name, password
@@ -52,19 +82,25 @@ router.post('/', async (req, res, next) => {
         { email: req.body.email, name: req.body.name, password: hashedPassword },
       ])
       .execute();
-    console.log(newUser); //밑의 콘솔로그는 터미널에서 회원가입정보 확인 출력용입니다.
+    //밑의 콘솔로그는 터미널에서 회원가입정보 확인 출력용입니다.
     console.log(`회원가입 신청내역입니다 : email: ${req.body.email}, name: ${req.body.name}, password(암호화됨): ${hashedPassword}`);
 
-    return res.status(200).json(newUser);
+    return res.status(200).send(
+      {
+        referenceModel: `none`,
+        message: `signup success`
+      }
+    );
   } catch (e) {
     console.error(e);
     // 에러 처리를 여기서
     return next(e);
   }
 });
+
 /**
  * 회원탈퇴(로컬)
- * req: email, password
+ * req: req.session.passport.user
  */
 router.delete('/', async (req, res, next) => {
   try {
@@ -82,7 +118,6 @@ router.delete('/', async (req, res, next) => {
       console.log(`탈퇴한 회원입니다: ${req.session.passport.user}`);
       req.logout(); //탈퇴했으면 로그아웃시키고, 세션도 끊어줘야됨. 
       return res.status(302).redirect('/'); //그리고 홈화면으로 API도 리다이렉트시켜야됨.
-      //return res.status(200).json(delUser);
     }
   } catch (e) {
     console.error(e);
@@ -133,6 +168,7 @@ router.patch('', async (req, res, next) => {
 router.post('/icon', async (req, res, next) => {
 
 });
+
 /**
  * 로그인(로컬)
  * req: email, password

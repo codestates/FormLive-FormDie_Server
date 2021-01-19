@@ -77,7 +77,25 @@ router.post('/icon', async (req, res, next) => {
  * req: email, password
  */
 router.post('/signin', async (req, res, next) => {
-
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {
+      console.error(err);
+      return next(err);
+    }
+    if (info) {
+      return res.status(401).send(info.reason);
+    }
+    return req.login(user, async (loginErr) => {
+      try {
+        if (loginErr) {
+          return next(loginErr);
+        }
+        return res.json(user);
+      } catch (e) {
+        return next(e);
+      }
+    });
+  })(req, res, next);
 });
 
 router.post('/signout', async (req, res, next) => {

@@ -151,6 +151,16 @@ router.post('/signin', function (req, res, next) { return __awaiter(void 0, void
 }); });
 router.post('/signout', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
+        console.log(req.session.passport.user);
+        req.logout();
+        if (req.session) {
+            req.session.destroy(function (err) {
+                res.send('logout 성공');
+            });
+        }
+        else {
+            res.send('logout 성공');
+        }
         return [2 /*return*/];
     });
 }); });

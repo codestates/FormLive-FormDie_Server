@@ -12,7 +12,8 @@
       "target": "es5",
       "module": "CommonJS",
       "moduleResolution": "node",
-      "outDir": "./dist",
+      "rootDir": "src",
+      "outDir": "dist",
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
       "sourceMap": true

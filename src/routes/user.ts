@@ -93,6 +93,40 @@ router.delete('/', async (req, res, next) => {
 });
 
 router.patch('', async (req, res, next) => {
+  try {
+    const user = await createQueryBuilder("user")
+      .where("user.id = :id", { id: req.session.passport.user })
+      .execute();    
+    if (user.length !== 0) {
+      if (req.body.name && req.body.password) {
+        const hashedPassword = await bcrypt.hash(req.body.password, 12);
+        await createQueryBuilder("user")
+        .update(User)
+        .set({name: req.body.name, password: hashedPassword})
+        .where({ id: req.session.passport.user })
+        .execute();
+      } else if (req.body.name) {
+        await createQueryBuilder("user")
+        .update(User)
+        .set({name: req.body.name})
+        .where({ id: req.session.passport.user })
+        .execute();
+      } else if (req.body.password) {
+        const hashedPassword = await bcrypt.hash(req.body.password, 12);
+        await createQueryBuilder("user")
+        .update(User)
+        .set({name: req.body.name})
+        .where({ password: hashedPassword })
+        .execute();
+      } else return res.status(400).send({ data: null, message: "no edit info provied"});
+      
+      return res.status(200).send({ data: null, message: "edit success"});
+    }
+  } catch (e) {
+    console.error(e);
+    // 에러 처리를 여기서
+    return next(e);
+  }
 
 });
 
@@ -110,14 +144,15 @@ router.post('/signin', async (req, res, next) => {
       return next(err);
     }
     if (info) {
-      return res.status(401).send(info.reason);
+      return res.status(401).send(info);
     }
     return req.login(user, async (loginErr) => {
       try {
         if (loginErr) {
+          console.error(loginErr);
           return next(loginErr);
         }
-        return res.json(user);
+        return res.send({data: {id: user.User_id, email: user.User_email}, message: "login success"});
       } catch (e) {
         return next(e);
       }
@@ -129,10 +164,10 @@ router.post('/signout', async (req, res, next) => {
   req.logout();
   if (req.session) {
     req.session.destroy((err) => {
-      res.send('logout 성공');
+      res.send({data: null, message: 'logout success'});
     });
   } else {
-    res.send('logout 성공');
+    res.send({data: null, message: 'logout success'});
   }
 });
 

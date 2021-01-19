@@ -9,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    var _ = { label: 0, sent: function () { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function () { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -38,6 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var express = require("express");
 var bcrypt = require("bcrypt"); //비밀번호 암호화모듈 사용 필요?
+var passport = require("passport");
 var typeorm_1 = require("typeorm"); //login테스트 위한 임시 커넥션 생성. 나중에 index.ts에서 받아오는 방식으로 변경하기
 var User_1 = require("../entity/User");
 // @EntityRepository(User)
@@ -53,114 +54,151 @@ var User_1 = require("../entity/User");
 //const timber = await userModel.findOne({ firstName: "Timber", lastName: "Saw" });
 //
 var router = express.Router();
-router.get('', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        return [2 /*return*/];
+router.get('', function (req, res, next) {
+    return __awaiter(void 0, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            return [2 /*return*/];
+        });
     });
-}); });
+});
 /**
  * 회원가입(로컬)
  * req: email, name, password
  * res: 미정?(추후 gitbook 참조)
  */
-router.post('/', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var exUser, hashedPassword, newUser, e_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 4, , 5]);
-                return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
+router.post('/', function (req, res, next) {
+    return __awaiter(void 0, void 0, void 0, function () {
+        var exUser, hashedPassword, newUser, e_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 4, , 5]);
+                    return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
                         .where("user.email = :email", { email: req.body.email })
                         .execute()];
-            case 1:
-                exUser = _a.sent();
-                //console.log(exUser); 성공시 []가 뜬다.
-                if (exUser.length !== 0) {
-                    console.log('이미 사용중인 아이디로 회원가입 시도 탐지');
-                    return [2 /*return*/, res.status(403).send('이미 사용중인 아이디입니다.')];
-                }
-                return [4 /*yield*/, bcrypt.hash(req.body.password, 12)];
-            case 2:
-                hashedPassword = _a.sent();
-                return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
+                case 1:
+                    exUser = _a.sent();
+                    console.log(exUser);
+                    if (exUser.length !== 0) {
+                        return [2 /*return*/, res.status(403).send('이미 사용중인 아이디입니다.')];
+                    }
+                    return [4 /*yield*/, bcrypt.hash(req.body.password, 12)];
+                case 2:
+                    hashedPassword = _a.sent();
+                    return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
                         .insert()
                         .into(User_1.User)
                         .values([
-                        { email: req.body.email, name: req.body.name, password: hashedPassword },
-                    ])
+                            { email: req.body.email, name: req.body.name, password: hashedPassword },
+                        ])
                         .execute()];
-            case 3:
-                newUser = _a.sent();
-                console.log(newUser); //밑의 콘솔로그는 터미널에서 회원가입정보 확인 출력용입니다.
-                console.log("\uD68C\uC6D0\uAC00\uC785 \uC2E0\uCCAD\uB0B4\uC5ED\uC785\uB2C8\uB2E4 : email: " + req.body.email + ", name: " + req.body.name + ", password(\uC554\uD638\uD654\uB428): " + hashedPassword);
-                return [2 /*return*/, res.status(200).json(newUser)];
-            case 4:
-                e_1 = _a.sent();
-                console.error(e_1);
-                // 에러 처리를 여기서
-                return [2 /*return*/, next(e_1)];
-            case 5: return [2 /*return*/];
-        }
+                case 3:
+                    newUser = _a.sent();
+                    console.log(newUser);
+                    return [2 /*return*/, res.status(200).json(newUser)];
+                case 4:
+                    e_1 = _a.sent();
+                    console.error(e_1);
+                    // 에러 처리를 여기서
+                    return [2 /*return*/, next(e_1)];
+                case 5: return [2 /*return*/];
+            }
+        });
     });
-}); });
+});
 /**
  * 회원탈퇴(로컬)
  * req: email, password
  */
-router.delete('/', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var exUser, delUser, e_2;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 4, , 5]);
-                return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
+router.delete('/', function (req, res, next) {
+    return __awaiter(void 0, void 0, void 0, function () {
+        var exUser, delUser, e_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 4, , 5]);
+                    return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
                         .where("user.email = :email", { email: req.body.email })
                         .execute()];
-            case 1:
-                exUser = _a.sent();
-                if (!(exUser.length !== 0)) return [3 /*break*/, 3];
-                return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
+                case 1:
+                    exUser = _a.sent();
+                    if (!(exUser.length !== 0)) return [3 /*break*/, 3];
+                    return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
                         .delete()
                         .from(User_1.User)
                         .where({ email: req.body.email }) //passport의 session에 있는 email 정보로 받아서 삭제하는 것으로 추후 변경 예정.
                         .execute()];
-            case 2:
-                delUser = _a.sent();
-                console.log("\uD0C8\uD1F4\uD55C \uD68C\uC6D0\uC785\uB2C8\uB2E4: " + req.body.email);
-                return [2 /*return*/, res.status(200).json(delUser)];
-            case 3: return [3 /*break*/, 5];
-            case 4:
-                e_2 = _a.sent();
-                console.error(e_2);
-                // 에러 처리를 여기서
-                return [2 /*return*/, next(e_2)];
-            case 5: return [2 /*return*/];
-        }
+                case 2:
+                    delUser = _a.sent();
+                    console.log("\uD0C8\uD1F4\uD55C \uD68C\uC6D0\uC785\uB2C8\uB2E4: " + req.body.email);
+                    return [2 /*return*/, res.status(200).json(delUser)];
+                case 3: return [3 /*break*/, 5];
+                case 4:
+                    e_2 = _a.sent();
+                    console.error(e_2);
+                    // 에러 처리를 여기서
+                    return [2 /*return*/, next(e_2)];
+                case 5: return [2 /*return*/];
+            }
+        });
     });
-}); });
-router.patch('', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        return [2 /*return*/];
+});
+router.patch('', function (req, res, next) {
+    return __awaiter(void 0, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            return [2 /*return*/];
+        });
     });
-}); });
-router.post('/icon', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        return [2 /*return*/];
+});
+router.post('/icon', function (req, res, next) {
+    return __awaiter(void 0, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            return [2 /*return*/];
+        });
     });
-}); });
+});
 /**
  * 로그인(로컬)
  * req: email, password
  */
-router.post('/signin', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        return [2 /*return*/];
+router.post('/signin', function (req, res, next) {
+    return __awaiter(void 0, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            passport.authenticate('local', function (err, user, info) {
+                if (err) {
+                    console.error(err);
+                    return next(err);
+                }
+                if (info) {
+                    return res.status(401).send(info.reason);
+                }
+                return req.login(user, function (loginErr) {
+                    return __awaiter(void 0, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            try {
+                                if (loginErr) {
+                                    return [2 /*return*/, next(loginErr)];
+                                }
+                                return [2 /*return*/, res.json(user)];
+                            }
+                            catch (e) {
+                                return [2 /*return*/, next(e)];
+                            }
+                            return [2 /*return*/];
+                        });
+                    });
+                });
+            })(req, res, next);
+            return [2 /*return*/];
+        });
     });
-}); });
-router.post('/signout', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        return [2 /*return*/];
+});
+router.post('/signout', function (req, res, next) {
+    return __awaiter(void 0, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            return [2 /*return*/];
+        });
     });
-}); });
+});
 exports.default = router;
 //# sourceMappingURL=user.js.map

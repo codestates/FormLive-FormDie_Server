@@ -2,7 +2,6 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { User } from './User';
 import { Form } from './Form';
 import { Group } from './Group';
-import { group } from "console";
 
 @Entity()
 export class Relation {

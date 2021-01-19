@@ -38,13 +38,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var passport = require("passport");
 var typeorm_1 = require("typeorm");
-//import { User } from '../entity/User';
 var local_1 = require("./local");
 exports.default = (function () {
     //로그인 할 때 한 번 실행
     passport.serializeUser(function (user, done) {
-        console.log(user);
-        return done(null, user);
+        done(null, user.User_id);
     });
     //유저 관련에 매번 실행됨
     passport.deserializeUser(function (id, done) { return __awaiter(void 0, void 0, void 0, function () {

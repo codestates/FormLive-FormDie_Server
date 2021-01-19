@@ -4,12 +4,12 @@ import local from './local';
 
 export default () => {
   //로그인 할 때 한 번 실행
-  passport.serializeUser((user, done) => {
-    done(null, user);
+  passport.serializeUser((user:any, done) => {
+    done(null, user.User_id);
   });
 
   //유저 관련에 매번 실행됨
-  passport.deserializeUser(async (id: number, done) => {
+  passport.deserializeUser(async (id:number, done) => {
     try {
       const user = await createQueryBuilder("user")
       .where("user.id = :id", { id })

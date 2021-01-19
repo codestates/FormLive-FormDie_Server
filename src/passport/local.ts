@@ -13,7 +13,6 @@ export default () => {
       const user = (await createQueryBuilder("user")
       .where("user.email = :email", { email })
       .execute())[0];
-      console.log(user);
       if (user.length === 0) {
         return done(null, false, { message: '존재하지 않는 사용자입니다!' });
       }

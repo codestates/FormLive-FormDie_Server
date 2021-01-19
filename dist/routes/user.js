@@ -115,7 +115,7 @@ router.delete('/', function (req, res, next) { return __awaiter(void 0, void 0, 
             case 0:
                 _a.trys.push([0, 4, , 5]);
                 return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
-                        .where("user.id = :id", { id: req.user })
+                        .where("user.id = :id", { id: req.session.passport.user })
                         .execute()];
             case 1:
                 exUser = _a.sent();
@@ -123,14 +123,13 @@ router.delete('/', function (req, res, next) { return __awaiter(void 0, void 0, 
                 return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
                         .delete()
                         .from(User_1.User) //  req.user or req.session.id or req.session.passport.user
-                        .where({ id: req.user }) //passport의 session에 있는 email 정보로 받아서 삭제하는 것으로 변경됨.
+                        .where({ id: req.session.passport.user }) //passport의 session에 있는 email 정보로 받아서 삭제하는 것으로 변경됨.
                         .execute()];
             case 2:
                 delUser = _a.sent();
-                console.log("\uD0C8\uD1F4\uD55C \uD68C\uC6D0\uC785\uB2C8\uB2E4: " + req.user);
+                console.log("\uD0C8\uD1F4\uD55C \uD68C\uC6D0\uC785\uB2C8\uB2E4: " + req.session.passport.user);
                 req.logout(); //탈퇴했으면 로그아웃시키고, 세션도 끊어줘야됨. 
-                res.status(200).redirect('/'); //그리고 홈화면으로 API도 리다이렉트시켜야됨.
-                _a.label = 3;
+                return [2 /*return*/, res.status(200).redirect('/')]; //그리고 홈화면으로 API도 리다이렉트시켜야됨.
             case 3: return [3 /*break*/, 5];
             case 4:
                 e_2 = _a.sent();
@@ -185,7 +184,6 @@ router.post('/signin', function (req, res, next) { return __awaiter(void 0, void
 }); });
 router.post('/signout', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        console.log(req.session.passport.user);
         req.logout();
         if (req.session) {
             req.session.destroy(function (err) {

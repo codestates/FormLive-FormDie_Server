@@ -55,7 +55,6 @@ exports.default = (function () {
                             .execute()];
                 case 1:
                     user = (_a.sent())[0];
-                    console.log(user);
                     if (user.length === 0) {
                         return [2 /*return*/, done(null, false, { message: '존재하지 않는 사용자입니다!' })];
                     }

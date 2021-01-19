@@ -58,7 +58,7 @@ app.use(expressSession({
 app.use(passport.initialize());
 app.use(passport.session());
 app.get('/', (req, res, next) => {
-    res.send('테스트');
+    res.send('Home');
 });
 app.use('/user', userRouter);
 app.use('/form', formRouter);

@@ -1,6 +1,8 @@
 import * as express from 'express';
 import * as bcrypt from 'bcrypt'; //비밀번호 암호화모듈 사용 필요?
 import * as passport from 'passport';
+import * as multer from 'multer';
+import * as fs from 'fs';
 import { Connection, createConnection, createQueryBuilder, QueryBuilder } from "typeorm"; //login테스트 위한 임시 커넥션 생성. 나중에 index.ts에서 받아오는 방식으로 변경하기
 import { Entity, EntityRepository, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, ManyToMany, JoinTable, Repository } from "typeorm";
 import { Relation } from '../entity/Relation';
@@ -150,8 +152,8 @@ router.patch('', async (req, res, next) => {
         const hashedPassword = await bcrypt.hash(req.body.password, 12);
         await createQueryBuilder("user")
         .update(User)
-        .set({name: req.body.name})
-        .where({ password: hashedPassword })
+        .set({password: hashedPassword })
+        .where({ id: req.session.passport.user })
         .execute();
       } else return res.status(400).send({ data: null, message: "no edit info provied"});
       
@@ -165,9 +167,34 @@ router.patch('', async (req, res, next) => {
 
 });
 
-router.post('/icon', async (req, res, next) => {
+/**
+ * icon 업로드 엔드포인트와 icon 가져오는 용 내부 API
+ */
+const upload = multer({dest: 'uploads/', limits: {fileSize: 5*1024*1024}});
+router.post('/icon', upload.single('img'), async (req, res, next) => {
+  const user = (await createQueryBuilder("user")
+    .where("user.id = :id", { id: req.session.passport.user })
+    .execute())[0];
+  let oldIcon : string;
+  if (user.User_profileIconURL) {
+    oldIcon = user.User_profileIconURL.split('/icon/')[1];
+  }
+  try {
+    fs.unlinkSync('./uploads/' + oldIcon);
+  } catch (err) {
+    console.error(err);
+  }
+  let profileIconURL : string = process.env.SERVER_URL + '/user/icon/' + req.file.filename;
+  await createQueryBuilder("user")
+  .update(User)
+  .set({ profileIconURL })
+  .where({ id: req.session.passport.user })
+  .execute();
 
+  return res.send({ data: {profileIconURL}, message: "set profile icon done" })  
 });
+
+router.get('/icon/:id', (req, res)=>{res.sendFile(req.params.id, {root: 'uploads/'})});
 
 /**
  * 로그인(로컬)

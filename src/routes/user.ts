@@ -31,21 +31,21 @@ const router = express.Router();
 router.get('/', async (req, res, next) => {
   try {
     //일단, 사전에 세션 아이디 여부를 검증합니다.
-    const exUser = await createQueryBuilder("user")
+    const user = await createQueryBuilder("user")
       .where("user.id = :id", { id: req.session.passport.user })
       .execute();
     //console.log(exUser); 유저가 존재하면,[]가 뜬다.
-    if (exUser.length !== 0) {
-      const getUser = await createQueryBuilder("user")
-        .where("user.id = :id", { id: req.session.passport.user })
-        .execute();
+    if (user.length !== 0) {
       return res.status(200).send( //01.19 저녁 meeting. RowDataPacket 가공하여 send로 변경.
         {
-          id: getUser[0].User_id,
-          email: getUser[0].User_email,
-          name: getUser[0].User_name,
-          profileIconURL: getUser[0].User_profileIconURL,
-          isAdmin: getUser[0].User_isAdmin
+          data: {
+            id: user[0].User_id,
+            email: user[0].User_email,
+            name: user[0].User_name,
+            profileIconURL: user[0].User_profileIconURL,
+            isAdmin: user[0].User_isAdmin
+          },
+          message: "successfully got user info"          
         }
       );
     }

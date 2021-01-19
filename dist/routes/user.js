@@ -54,9 +54,44 @@ var User_1 = require("../entity/User");
 //const timber = await userModel.findOne({ firstName: "Timber", lastName: "Saw" });
 //
 var router = express.Router();
-router.get('', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+/**
+ * 회원정보 받아오기
+ * req: req.session.passport.user
+ * res: user. id, email, name, profileIconURL, isAdmin
+ */
+router.get('/', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var exUser, getUser, e_1;
     return __generator(this, function (_a) {
-        return [2 /*return*/];
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 4, , 5]);
+                return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
+                        .where("user.id = :id", { id: req.session.passport.user })
+                        .execute()];
+            case 1:
+                exUser = _a.sent();
+                if (!(exUser.length !== 0)) return [3 /*break*/, 3];
+                return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
+                        .where("user.id = :id", { id: req.session.passport.user })
+                        .execute()];
+            case 2:
+                getUser = _a.sent();
+                return [2 /*return*/, res.status(200).send(//01.19 저녁 meeting. RowDataPacket 가공하여 send로 변경.
+                    {
+                        id: getUser[0].User_id,
+                        email: getUser[0].User_email,
+                        name: getUser[0].User_name,
+                        profileIconURL: getUser[0].User_profileIconURL,
+                        isAdmin: getUser[0].User_isAdmin
+                    })];
+            case 3: return [3 /*break*/, 5];
+            case 4:
+                e_1 = _a.sent();
+                console.error(e_1);
+                // 에러 처리를 여기서
+                return [2 /*return*/, next(e_1)];
+            case 5: return [2 /*return*/];
+        }
     });
 }); });
 /**
@@ -65,7 +100,7 @@ router.get('', function (req, res, next) { return __awaiter(void 0, void 0, void
  * res: 미정?(추후 gitbook 참조)
  */
 router.post('/', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var exUser, hashedPassword, newUser, e_1;
+    var exUser, hashedPassword, newUser, e_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -94,22 +129,25 @@ router.post('/', function (req, res, next) { return __awaiter(void 0, void 0, vo
                 newUser = _a.sent();
                 console.log(newUser); //밑의 콘솔로그는 터미널에서 회원가입정보 확인 출력용입니다.
                 console.log("\uD68C\uC6D0\uAC00\uC785 \uC2E0\uCCAD\uB0B4\uC5ED\uC785\uB2C8\uB2E4 : email: " + req.body.email + ", name: " + req.body.name + ", password(\uC554\uD638\uD654\uB428): " + hashedPassword);
-                return [2 /*return*/, res.status(200).json(newUser)];
+                return [2 /*return*/, res.status(200).send({
+                        referenceModel: "none",
+                        message: "success"
+                    })];
             case 4:
-                e_1 = _a.sent();
-                console.error(e_1);
+                e_2 = _a.sent();
+                console.error(e_2);
                 // 에러 처리를 여기서
-                return [2 /*return*/, next(e_1)];
+                return [2 /*return*/, next(e_2)];
             case 5: return [2 /*return*/];
         }
     });
 }); });
 /**
  * 회원탈퇴(로컬)
- * req: email, password
+ * req: req.session.passport.user
  */
 router.delete('/', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var exUser, delUser, e_2;
+    var exUser, delUser, e_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -129,13 +167,13 @@ router.delete('/', function (req, res, next) { return __awaiter(void 0, void 0, 
                 delUser = _a.sent();
                 console.log("\uD0C8\uD1F4\uD55C \uD68C\uC6D0\uC785\uB2C8\uB2E4: " + req.session.passport.user);
                 req.logout(); //탈퇴했으면 로그아웃시키고, 세션도 끊어줘야됨. 
-                return [2 /*return*/, res.status(200).redirect('/')]; //그리고 홈화면으로 API도 리다이렉트시켜야됨.
+                return [2 /*return*/, res.status(302).redirect('/')]; //그리고 홈화면으로 API도 리다이렉트시켜야됨.
             case 3: return [3 /*break*/, 5];
             case 4:
-                e_2 = _a.sent();
-                console.error(e_2);
+                e_3 = _a.sent();
+                console.error(e_3);
                 // 에러 처리를 여기서
-                return [2 /*return*/, next(e_2)];
+                return [2 /*return*/, next(e_3)];
             case 5: return [2 /*return*/];
         }
     });

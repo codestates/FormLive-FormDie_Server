@@ -126,7 +126,14 @@ router.post('/signin', async (req, res, next) => {
 });
 
 router.post('/signout', async (req, res, next) => {
-
+  req.logout();
+  if (req.session) {
+    req.session.destroy((err) => {
+      res.send('logout 성공');
+    });
+  } else {
+    res.send('logout 성공');
+  }
 });
 
 export default router;

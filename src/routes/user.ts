@@ -77,9 +77,9 @@ router.delete('/', async (req, res, next) => {
       const delUser = await createQueryBuilder("user")
         .delete()
         .from(User) //  req.user or req.session.id or req.session.passport.user
-        .where({ id: req.user }) //passport의 session에 있는 email 정보로 받아서 삭제하는 것으로 변경됨.
+        .where({ id: req.session.passport.user }) //passport의 session에 있는 email 정보로 받아서 삭제하는 것으로 변경됨.
         .execute();
-      console.log(`탈퇴한 회원입니다: ${req.user}`);
+      console.log(`탈퇴한 회원입니다: ${req.session.passport.user}`);
       req.logout(); //탈퇴했으면 로그아웃시키고, 세션도 끊어줘야됨. 
       res.status(200).redirect('/'); //그리고 홈화면으로 API도 리다이렉트시켜야됨.
       //return res.status(200).json(delUser);

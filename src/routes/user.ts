@@ -64,7 +64,7 @@ router.post('/', async (req, res, next) => {
 });
 /**
  * 회원탈퇴(로컬)
- * req: email, password
+ * req: req.session.passport.user
  */
 router.delete('/', async (req, res, next) => {
   try {

@@ -8,6 +8,7 @@ import * as passport from 'passport';
 import * as hpp from 'hpp';
 import * as helmet from 'helmet';
 
+import passportConfig from './passport';
 import authRouter from './routes/auth';
 import formRouter from './routes/form';
 import groupRouter from './routes/group';
@@ -19,6 +20,7 @@ import "reflect-metadata";
 import { createConnection } from "typeorm";
 createConnection();
 
+passportConfig();
 dotenv.config();
 const app = express();
 const prod = process.env.NODE_ENV === 'production';

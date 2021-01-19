@@ -38,11 +38,11 @@ router.post('/', async (req, res, next) => {
     const exUser = await createQueryBuilder("user")
       .where("user.email = :email", { email: req.body.email })
       .execute();
-    console.log(exUser);
+    //console.log(exUser); 성공시 []가 뜬다.
     if (exUser.length !== 0) {
+      console.log('이미 사용중인 아이디로 회원가입 시도 탐지');
       return res.status(403).send('이미 사용중인 아이디입니다.');
     }
-
     //bcrypt는 테스트 필요.
     const hashedPassword = await bcrypt.hash(req.body.password, 12); // salt는 10~13 사이로
     const newUser = await createQueryBuilder("user")
@@ -52,7 +52,9 @@ router.post('/', async (req, res, next) => {
         { email: req.body.email, name: req.body.name, password: hashedPassword },
       ])
       .execute();
-    console.log(newUser);
+    console.log(newUser); //밑의 콘솔로그는 터미널에서 회원가입정보 확인 출력용입니다.
+    console.log(`회원가입 신청내역입니다 : email: ${req.body.email}, name: ${req.body.name}, password(암호화됨): ${hashedPassword}`);
+
     return res.status(200).json(newUser);
   } catch (e) {
     console.error(e);
@@ -60,8 +62,31 @@ router.post('/', async (req, res, next) => {
     return next(e);
   }
 });
-
-router.delete('', async (req, res, next) => {
+/**
+ * 회원탈퇴(로컬)
+ * req: email, password
+ */
+router.delete('/', async (req, res, next) => {
+  try {
+    //일단, 사전에 삭제할 이메일이 존재하는지 확인합니다.
+    const exUser = await createQueryBuilder("user")
+      .where("user.email = :email", { email: req.body.email })
+      .execute();
+    //console.log(exUser); 삭제할 이메일이 존재하면,[]가 뜬다.
+    if (exUser.length !== 0) {
+      const delUser = await createQueryBuilder("user")
+        .delete()
+        .from(User)
+        .where({ email: req.body.email }) //passport의 session에 있는 email 정보로 받아서 삭제하는 것으로 추후 변경 예정.
+        .execute();
+      console.log(`탈퇴한 회원입니다: ${req.body.email}`);
+      return res.status(200).json(delUser);
+    }
+  } catch (e) {
+    console.error(e);
+    // 에러 처리를 여기서
+    return next(e);
+  }
 
 });
 

@@ -7,9 +7,10 @@
       "node": "14.15.4",
       "npm": "6.14.10"
    },
-   "scripts": {
-      "start": "ts-node src/index.ts",
-      "startjs": "nodemon dist/index.js"
+   "scripts": { 
+      "start": "tsc && node dist/index.js",
+      "startjs": "nodemon dist/index.js",
+      "test": "ts-node src/index.ts"
    },
    "author": "formlive-formdie",
    "license": "ISC",

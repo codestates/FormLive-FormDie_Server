@@ -9,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function () { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function () { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -44,37 +44,35 @@ exports.default = (function () {
     passport.use('local', new passport_local_1.Strategy({
         usernameField: 'email',
         passwordField: 'password',
-    }, function (email, password, done) {
-        return __awaiter(void 0, void 0, void 0, function () {
-            var user, result, e_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 3, , 4]);
-                        return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
+    }, function (email, password, done) { return __awaiter(void 0, void 0, void 0, function () {
+        var user, result, e_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
                             .where("user.email = :email", { email: email })
                             .execute()];
-                    case 1:
-                        user = (_a.sent())[0];
-                        console.log(user);
-                        if (user.length === 0) {
-                            return [2 /*return*/, done(null, false, { message: '존재하지 않는 사용자입니다!' })];
-                        }
-                        return [4 /*yield*/, bcrypt.compare(password, user.User_password)];
-                    case 2:
-                        result = _a.sent();
-                        if (result) {
-                            return [2 /*return*/, done(null, user)];
-                        }
-                        return [2 /*return*/, done(null, false, { message: '비밀번호가 틀립니다.' })];
-                    case 3:
-                        e_1 = _a.sent();
-                        console.error(e_1);
-                        return [2 /*return*/, done(e_1)];
-                    case 4: return [2 /*return*/];
-                }
-            });
+                case 1:
+                    user = (_a.sent())[0];
+                    console.log(user);
+                    if (user.length === 0) {
+                        return [2 /*return*/, done(null, false, { message: '존재하지 않는 사용자입니다!' })];
+                    }
+                    return [4 /*yield*/, bcrypt.compare(password, user.User_password)];
+                case 2:
+                    result = _a.sent();
+                    if (result) {
+                        return [2 /*return*/, done(null, user)];
+                    }
+                    return [2 /*return*/, done(null, false, { message: '비밀번호가 틀립니다.' })];
+                case 3:
+                    e_1 = _a.sent();
+                    console.error(e_1);
+                    return [2 /*return*/, done(e_1)];
+                case 4: return [2 /*return*/];
+            }
         });
-    }));
+    }); }));
 });
 //# sourceMappingURL=local.js.map

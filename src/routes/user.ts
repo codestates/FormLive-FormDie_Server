@@ -70,17 +70,19 @@ router.delete('/', async (req, res, next) => {
   try {
     //일단, 사전에 삭제할 이메일이 존재하는지 확인합니다.
     const exUser = await createQueryBuilder("user")
-      .where("user.email = :email", { email: req.body.email })
+      .where("user.id = :id", { id: req.user })
       .execute();
     //console.log(exUser); 삭제할 이메일이 존재하면,[]가 뜬다.
     if (exUser.length !== 0) {
       const delUser = await createQueryBuilder("user")
         .delete()
-        .from(User)
-        .where({ email: req.body.email }) //passport의 session에 있는 email 정보로 받아서 삭제하는 것으로 추후 변경 예정.
+        .from(User) //  req.user or req.session.id or req.session.passport.user
+        .where({ id: req.user }) //passport의 session에 있는 email 정보로 받아서 삭제하는 것으로 변경됨.
         .execute();
-      console.log(`탈퇴한 회원입니다: ${req.body.email}`);
-      return res.status(200).json(delUser);
+      console.log(`탈퇴한 회원입니다: ${req.user}`);
+      req.logout(); //탈퇴했으면 로그아웃시키고, 세션도 끊어줘야됨. 
+      res.status(200).redirect('/'); //그리고 홈화면으로 API도 리다이렉트시켜야됨.
+      //return res.status(200).json(delUser);
     }
   } catch (e) {
     console.error(e);

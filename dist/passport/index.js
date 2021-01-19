@@ -9,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function () { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function () { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -38,37 +38,33 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var passport = require("passport");
 var typeorm_1 = require("typeorm");
-//import { User } from '../entity/User';
 var local_1 = require("./local");
 exports.default = (function () {
     //로그인 할 때 한 번 실행
     passport.serializeUser(function (user, done) {
-        console.log(user);
-        return done(null, user);
+        done(null, user);
     });
     //유저 관련에 매번 실행됨
-    passport.deserializeUser(function (id, done) {
-        return __awaiter(void 0, void 0, void 0, function () {
-            var user, err_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
+    passport.deserializeUser(function (id, done) { return __awaiter(void 0, void 0, void 0, function () {
+        var user, err_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    return [4 /*yield*/, typeorm_1.createQueryBuilder("user")
                             .where("user.id = :id", { id: id })
                             .execute()];
-                    case 1:
-                        user = _a.sent();
-                        return [2 /*return*/, done(null, user)]; //이것이 req.user가 되는데 따로 타이핑을 해줘야 함.
-                    case 2:
-                        err_1 = _a.sent();
-                        console.error(err_1);
-                        return [2 /*return*/, done(err_1)];
-                    case 3: return [2 /*return*/];
-                }
-            });
+                case 1:
+                    user = _a.sent();
+                    return [2 /*return*/, done(null, user)]; //이것이 req.user가 되는데 따로 타이핑을 해줘야 함.
+                case 2:
+                    err_1 = _a.sent();
+                    console.error(err_1);
+                    return [2 /*return*/, done(err_1)];
+                case 3: return [2 /*return*/];
+            }
         });
-    });
+    }); });
     local_1.default();
 });
 //# sourceMappingURL=index.js.map

@@ -64,21 +64,29 @@ router.get('/', async (req, res, next) => {
           .orderBy(`${sort}`, "DESC")
           .execute();
       }
-      //총 form 갯수가 저장된 변수.
-      let totalFormCount = await createQueryBuilder("form")
-        .select(`SUM(form.id)`, `total`)
-        .execute();
+      //총 form 갯수가 저장된 변수. 처음에 썼던 SUM은 호환성 문제로 getCount로 변경
+      let total = await createQueryBuilder("form")
+        .getCount();
 
-      //for 문 반복으로 전체 가공 취소. map으로 일괄적인 가공으로 변경.
-      //다시 for문으로 전체 가공 예정.
-      let data = getForm.map(function (array) {
-        return array;
-      });
+      //for 문 반복으로 전체 가공 d완료.
+
+      let content = [];
+      for (let el of getForm) {
+        content.push({
+          formId: el.Form_id,
+          title: el.Form_title,
+          description: el.Form_description,
+          views: el.Form_views,
+          updated_at: el.Form_updated_at
+        });
+      }      
 
       return res.status(200).send(
         {
-          data: data,
-          total: totalFormCount[0].total,
+          data: {
+            total,
+            content
+          },          
           message: "get form list success"
         }
       );

@@ -51,7 +51,7 @@ router.get('/', async (req, res, next) => {
 
         getForm = await createQueryBuilder("form")
           //{ title: `%${q}%` } like문 추가 필요.
-          .where("title = :title", { title: `${q}` })
+          .where("title like :title", { title: `%${q}%` })
           .skip(offset)
           .take(offset + pageLimit) //.limit(X)
           .orderBy(`${sort}`, "DESC")
@@ -79,14 +79,14 @@ router.get('/', async (req, res, next) => {
           views: el.Form_views,
           updated_at: el.Form_updated_at
         });
-      }      
+      }
 
       return res.status(200).send(
         {
           data: {
             total,
             content
-          },          
+          },
           message: "get form list success"
         }
       );
@@ -137,7 +137,7 @@ router.post('', async (req, res, next) => {
         contents: JSON.stringify(req.body.contents)
       }])
       .execute();
-    res.send({ data: null, message: "userform saved"})
+    res.send({ data: null, message: "userform saved" })
   } catch (error) {
     console.error(error);
     res.status(400).send({ data: null, message: "not authorized" });
@@ -157,7 +157,7 @@ router.patch('', async (req, res, next) => {
         formId: req.body.formId
       })
       .execute();
-    res.send({ data: null, message: "userform edit success"})
+    res.send({ data: null, message: "userform edit success" })
   } catch (error) {
     console.error(error);
     res.status(400).send({ data: null, message: "not authorized" });

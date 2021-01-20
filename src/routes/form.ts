@@ -91,15 +91,69 @@ router.get('/', async (req, res, next) => {
 
 });
 
+
+//get /:id 한 번 씩 올 때마다 view가 1개씩 올라감
 router.get('/:id', async (req, res, next) => {
+  try {
+    const userform = (await createQueryBuilder("userform")
+      .where("userId = :userId", { userId: req.session.passport.user })
+      .andWhere("formId = :formId", { formId: req.params.id })
+      .execute())[0];
+    if (!userform || userform.length === 0) {
+      res.status(400).send({ data: null, message: 'form not exist' });
+    } else {
+      res.send({
+        data: {
+          title: '',
+          contents: JSON.parse(userform.Userform_contents)
+        },
+        message: "get form contents success"
+      })
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ data: null, message: "not authorized" });
+  }
 
 });
 
 router.post('', async (req, res, next) => {
-
+  try {
+    await createQueryBuilder("userform")
+      .insert()
+      .into(Userform)
+      .values([{
+        userId: req.session.passport.user,
+        formId: req.body.formId,
+        isComplete: req.body.isComplete,
+        contents: JSON.stringify(req.body.contents)
+      }])
+      .execute();
+    res.send({ data: null, message: "userform saved"})
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ data: null, message: "not authorized" });
+  };
 });
 
 router.patch('', async (req, res, next) => {
+  try {
+    await createQueryBuilder("userform")
+      .update(Userform)
+      .set({
+        isComplete: req.body.isComplete,
+        contents: JSON.stringify(req.body.contents)
+      })
+      .where({
+        userId: req.session.passport.user,
+        formId: req.body.formId
+      })
+      .execute();
+    res.send({ data: null, message: "userform edit success"})
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ data: null, message: "not authorized" });
+  };
 
 });
 

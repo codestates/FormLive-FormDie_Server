@@ -71,7 +71,7 @@ app.use('/auth', authRouter);
 
 const port = process.env.PORT || 5000;
 
-if (process.env.SERVER_URL[4] === "https://yangsikdang.ml:5000") {
+if (process.env.SERVER_URL === "https://yangsikdang.ml:5000") {
     const privateKey = fs.readFileSync(
         "/etc/letsencrypt/live/yangsikdang.ml/privkey.pem",
         "utf8"

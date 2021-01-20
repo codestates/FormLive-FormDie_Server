@@ -4,7 +4,7 @@ import * as passport from 'passport';
 import * as multer from 'multer';
 import * as fs from 'fs';
 
-import { Connection, createConnection, createQueryBuilder, QueryBuilder } from "typeorm"; //login테스트 위한 임시 커넥션 생성. 나중에 index.ts에서 받아오는 방식으로 변경하기
+import { Connection, createConnection, createQueryBuilder, getRepository, QueryBuilder } from "typeorm"; //login테스트 위한 임시 커넥션 생성. 나중에 index.ts에서 받아오는 방식으로 변경하기
 import { Entity, EntityRepository, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, ManyToMany, JoinTable, Repository } from "typeorm";
 
 import { Form } from "../entity/Form";
@@ -102,17 +102,34 @@ router.get('/', async (req, res, next) => {
 
 //get /:id 한 번 씩 올 때마다 view가 1개씩 올라감
 router.get('/:id', async (req, res, next) => {
-  try {
+  try {    
+    const viewcounter = await createQueryBuilder()
+      .update(Form)
+      .set({views: () => "views + 1"})
+      .where("id = :id", { id: req.params.id })
+      .execute();
+    if (!viewcounter.affected) {
+      return res.status(400).send({
+        data: null,
+        message: 'form not exist'
+      })
+    }
     const userform = (await createQueryBuilder("userform")
       .where("userId = :userId", { userId: req.session.passport.user })
       .andWhere("formId = :formId", { formId: req.params.id })
       .execute())[0];
+    const form = (await createQueryBuilder("form")
+      .where("id = :id", { id: req.params.id })
+      .execute())[0];
     if (!userform || userform.length === 0) {
-      res.status(400).send({ data: null, message: 'form not exist' });
+      return res.send({ data: null, message: 'userform data blank' });
     } else {
-      res.send({
+      return res.send({
         data: {
-          title: '',
+          title: form.Form_title,
+          description: form.Form_description,
+          views: form.Form_views,
+          updated_at: form.Form_updated_at,
           contents: JSON.parse(userform.Userform_contents)
         },
         message: "get form contents success"
@@ -120,7 +137,7 @@ router.get('/:id', async (req, res, next) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(400).send({ data: null, message: "not authorized" });
+    return res.status(401).send({ data: null, message: "not authorized" });
   }
 
 });
@@ -139,8 +156,13 @@ router.post('', async (req, res, next) => {
       .execute();
     res.send({ data: null, message: "userform saved"})
   } catch (error) {
-    console.error(error);
-    res.status(400).send({ data: null, message: "not authorized" });
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: "userform duplicate. please use PATCH method to edit." })
+    }
+    
   };
 });
 
@@ -160,7 +182,7 @@ router.patch('', async (req, res, next) => {
     res.send({ data: null, message: "userform edit success"})
   } catch (error) {
     console.error(error);
-    res.status(400).send({ data: null, message: "not authorized" });
+    res.status(401).send({ data: null, message: "not authorized" });
   };
 
 });
@@ -180,7 +202,7 @@ router.delete('', async (req, res, next) => {
       res.status(400).send({ data: null, message: "not deleted. maybe not exist any more?" });
     }
   } catch (err) {
-    res.status(400).send({ data: null, message: "not authorized" });
+    res.status(401).send({ data: null, message: "not authorized" });
   }
 
 });

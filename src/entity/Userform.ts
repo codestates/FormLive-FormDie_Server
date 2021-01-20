@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, ManyToMany, JoinTable } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, ManyToMany, JoinTable, Unique } from "typeorm";
 import { User } from './User';
 import { Form } from './Form';
 
 @Entity()
-export class Userform {
+@Unique(['userId', 'formId'])
+export class Userform {  
 
   @PrimaryGeneratedColumn()
   id: number;

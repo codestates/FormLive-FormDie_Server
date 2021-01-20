@@ -1,16 +1,93 @@
 import * as express from 'express';
+import * as bcrypt from 'bcrypt'; //비밀번호 암호화모듈 사용 필요?
 import * as passport from 'passport';
+import * as multer from 'multer';
+import * as fs from 'fs';
+
 import { Connection, createConnection, createQueryBuilder, QueryBuilder } from "typeorm"; //login테스트 위한 임시 커넥션 생성. 나중에 index.ts에서 받아오는 방식으로 변경하기
 import { Entity, EntityRepository, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, ManyToMany, JoinTable, Repository } from "typeorm";
+
+import { Form } from "../entity/Form";
+import { Group } from '../entity/Group';
 import { Relation } from '../entity/Relation';
 import { Suggestion } from '../entity/Suggestion';
-import { Userform } from '../entity/Userform';
 import { User } from "../entity/User";
-
+import { Userform } from '../entity/Userform';
+import { totalmem } from 'os';
 
 const router = express.Router();
 
-router.get('', async (req, res, next) => {
+/**
+ * 개별 폼들 리스트 받아오기 
+ * req: req.session.passport.user, (queryString: q, page, sort)
+ * 하드코딩된 폼 규격들 중에 q값에 맞는 것을 찾아 전송해줌
+ * res: form 데이터 쿼리문에 따라 응답.
+ */
+router.get('/', async (req, res, next) => {
+  try {
+    //일단, 사전에 세션 아이디 여부를 검증합니다.
+    const user = await createQueryBuilder("user")
+      .where("id = :id", { id: req.session.passport.user })
+      .execute();
+    //console.log(user); 유저가 존재하면,[]가 뜬다.
+    if (user.length !== 0) {
+      //각각의 변수 유무에 따른 분리.
+      let sort = '', q = '', pageLimit = 12, offset = 0;
+      //분기점. 쿼리가 있는 경우에 따라 분리.
+      if (req.query.sort === 'popular') { //조회순 검색이면.
+        sort = 'Form_views'; //`ORDER BY views DESC`;   
+      } else { //아니면 최신순.
+        sort = `updated_at`;
+      }
+      //주의! 페이징할때 검색결과값이 12 이하이면, req.query.page에 2이상 입력시 0이 반환됩니다.
+      if (!req.query.page) { //NaN 이나 입력안한 undefined일 경우,
+        offset = 0;
+      } else {
+        offset = pageLimit * (Number(req.query.page) - 1); //or parseInt(req.query.offset, 12);
+      }
+      let getForm = []; //배열로 일괄 초기화 변경
+      if (req.query.q) { //제목검색 쿼리가 있으면,
+        q = String(req.query.q);
+
+        getForm = await createQueryBuilder("form")
+          //{ title: `%${q}%` } like문 추가 필요.
+          .where("title = :title", { title: `${q}` })
+          .skip(offset)
+          .take(offset + pageLimit) //.limit(X)
+          .orderBy(`${sort}`, "DESC")
+          .execute();
+      } else { //없으면
+        getForm = await createQueryBuilder("form")
+          //.where("title = :title", { title: `%${q}%` })
+          .skip(offset)
+          .take(offset + pageLimit) //.limit(X)
+          .orderBy(`${sort}`, "DESC")
+          .execute();
+      }
+      //총 form 갯수가 저장된 변수.
+      let totalFormCount = await createQueryBuilder("form")
+        .select(`SUM(form.id)`, `total`)
+        .execute();
+
+      //for 문 반복으로 전체 가공 취소. map으로 일괄적인 가공으로 변경.
+      //다시 for문으로 전체 가공 예정.
+      let data = getForm.map(function (array) {
+        return array;
+      });
+
+      return res.status(200).send(
+        {
+          data: data,
+          total: totalFormCount[0].total,
+          message: "get form list success"
+        }
+      );
+    }
+  } catch (e) {
+    console.error(e);
+    // 에러 처리를 여기서
+    return next(e);
+  }
 
 });
 
@@ -43,7 +120,7 @@ router.delete('', async (req, res, next) => {
   } catch (err) {
     res.status(400).send({ data: null, message: "not authorized" });
   }
-  
+
 });
 
 export default router;

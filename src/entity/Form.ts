@@ -14,13 +14,16 @@ export class Form {
   @Column({ nullable: true })
   description: string;
 
+  @Column({ default: 0 })
+  views: number;
+
   @CreateDateColumn({
-      name: "created_at"
+    name: "created_at"
   })
   createdAt: Date;
 
   @UpdateDateColumn({
-      name: "updated_at"
+    name: "updated_at"
   })
   updatedAt: Date;
 

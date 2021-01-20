@@ -14,7 +14,7 @@ export class Userform {
   @Column()
   formId: number;
 
-  @Column({ length: 20000, nullable: true })
+  @Column({ length: 16000, nullable: true })
   contents: string;
 
   @Column('boolean', { default: false })

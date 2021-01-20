@@ -7,6 +7,8 @@ import * as dotenv from 'dotenv';
 import * as passport from 'passport';
 import * as hpp from 'hpp';
 import * as helmet from 'helmet';
+import * as https from 'https';
+import * as fs from 'fs';
 
 import passportConfig from './passport';
 import authRouter from './routes/auth';
@@ -66,30 +68,33 @@ app.use('/group', groupRouter);
 app.use('/history', historyRouter);
 app.use('/suggestion', suggestionRouter);
 app.use('/auth', authRouter);
-const port = process.env.PORT || 5000;
-app.listen(port, () => {
-    console.log(`Server Running at ${port}`);
-});
 
-// certificate;
-// const privateKey = fs.readFileSync(
-//   "/etc/letsencrypt/live/yangsikdang.ml/privkey.pem",
-//   "utf8"
-// );
-// const certificate = fs.readFileSync(
-//   "/etc/letsencrypt/live/yangsikdang.ml/cert.pem",
-//   "utf8"
-// );
-// const ca = fs.readFileSync(
-//   "/etc/letsencrypt/live/yangsikdang.ml/chain.pem",
-//   "utf8"
-// );
-// const credentials = {
-//   key: privateKey,
-//   cert: certificate,
-//   ca: ca,
-// };
-//const https_server = https.createServer(credentials, app);
-// https_server.listen("8443", () => {
-//   console.log(`https Server Running at 8443`);
-// });
+const port = process.env.PORT || 5000;
+
+if (process.env.SERVER_URL[4] === "https://yangsikdang.ml:5000") {
+    const privateKey = fs.readFileSync(
+        "/etc/letsencrypt/live/yangsikdang.ml/privkey.pem",
+        "utf8"
+    );
+    const certificate = fs.readFileSync(
+        "/etc/letsencrypt/live/yangsikdang.ml/cert.pem",
+        "utf8"
+    );
+    const ca = fs.readFileSync(
+        "/etc/letsencrypt/live/yangsikdang.ml/chain.pem",
+        "utf8"
+    );
+    const credentials = {
+        key: privateKey,
+        cert: certificate,
+        ca: ca,
+    };
+    const https_server = https.createServer(credentials, app);
+    https_server.listen(port, () => {
+        console.log(`HTTPS Server Running at ${port}`);
+    });
+} else {
+    app.listen(port, () => {
+        console.log(`Server Running at ${port}`);
+    });
+}

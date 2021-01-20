@@ -34,7 +34,7 @@ router.get('/', async (req, res, next) => {
   try {
     //일단, 사전에 세션 아이디 여부를 검증합니다.
     const user = await createQueryBuilder("user")
-      .where("user.id = :id", { id: req.session.passport.user })
+      .where("id = :id", { id: req.session.passport.user })
       .execute();
     //console.log(exUser); 유저가 존재하면,[]가 뜬다.
     if (user.length !== 0) {
@@ -68,12 +68,17 @@ router.post('/', async (req, res, next) => {
   try {
     //sequelize의 findOne 대신 typeorm의 createQueryBuilder입니다.
     const exUser = await createQueryBuilder("user")
-      .where("user.email = :email", { email: req.body.email })
+
+
+    //   >>>>>>>>>>>>>>>> where절에 user.email 말고 그냥 email 쓰자!!!! <<<<<<<<<<<<<<<<<<<<<<
+
+
+      .where("email = :email", { email: req.body.email })   
       .execute();
     //console.log(exUser); 성공시 []가 뜬다.
     if (exUser.length !== 0) {
       console.log('이미 사용중인 아이디로 회원가입 시도 탐지');
-      return res.status(403).send('이미 사용중인 아이디입니다.');
+      return res.status(403).send({ data: null, message: '이미 사용중인 아이디입니다.'});
     }
     //bcrypt는 테스트 필요.
     const hashedPassword = await bcrypt.hash(req.body.password, 12); // salt는 10~13 사이로
@@ -89,7 +94,7 @@ router.post('/', async (req, res, next) => {
 
     return res.status(200).send(
       {
-        referenceModel: `none`,
+        data: null,
         message: `signup success`
       }
     );
@@ -107,19 +112,35 @@ router.post('/', async (req, res, next) => {
 router.delete('/', async (req, res, next) => {
   try {
     //일단, 사전에 삭제할 이메일이 존재하는지 확인합니다.
-    const exUser = await createQueryBuilder("user")
-      .where("user.id = :id", { id: req.session.passport.user })
+    const user = await createQueryBuilder("user")
+      .where("id = :id", { id: req.session.passport.user })
       .execute();
     //console.log(exUser); 삭제할 이메일이 존재하면,[]가 뜬다.
-    if (exUser.length !== 0) {
-      const delUser = await createQueryBuilder("user")
-        .delete()
-        .from(User) //  req.user or req.session.id or req.session.passport.user
-        .where({ id: req.session.passport.user }) //passport의 session에 있는 email 정보로 받아서 삭제하는 것으로 변경됨.
-        .execute();
-      console.log(`탈퇴한 회원입니다: ${req.session.passport.user}`);
-      req.logout(); //탈퇴했으면 로그아웃시키고, 세션도 끊어줘야됨. 
-      return res.status(302).redirect('/'); //그리고 홈화면으로 API도 리다이렉트시켜야됨.
+    if (user.length !== 0) {
+      let result: boolean = false;
+      try {
+        result = await bcrypt.compare(req.body.password, user[0].User_password);
+      } catch (e) {
+        return res.status(400).send({
+          data: null,
+          message: "password required"
+        })
+      }      
+      if (result) {
+        await createQueryBuilder("user")
+          .delete()
+          .from(User) //  req.user or req.session.id or req.session.passport.user
+          .where({ id: req.session.passport.user }) //passport의 session에 있는 email 정보로 받아서 삭제하는 것으로 변경됨.
+          .execute();
+        console.log(`탈퇴한 회원입니다: ${req.session.passport.user}`);
+        req.logout(); //탈퇴했으면 로그아웃시키고, 세션도 끊어줘야됨. 
+        return res.status(302).redirect('/'); //그리고 홈화면으로 API도 리다이렉트시켜야됨.
+      } else {
+        return res.status(400).send({
+          data: null,
+          message: "wrong password"
+        })
+      }
     }
   } catch (e) {
     console.error(e);
@@ -132,7 +153,7 @@ router.delete('/', async (req, res, next) => {
 router.patch('', async (req, res, next) => {
   try {
     const user = await createQueryBuilder("user")
-      .where("user.id = :id", { id: req.session.passport.user })
+      .where("id = :id", { id: req.session.passport.user })
       .execute();    
     if (user.length !== 0) {
       if (req.body.name && req.body.password) {
@@ -173,7 +194,7 @@ router.patch('', async (req, res, next) => {
 const upload = multer({dest: 'uploads/', limits: {fileSize: 5*1024*1024}});
 router.post('/icon', upload.single('img'), async (req, res, next) => {
   const user = (await createQueryBuilder("user")
-    .where("user.id = :id", { id: req.session.passport.user })
+    .where("id = :id", { id: req.session.passport.user })
     .execute())[0];
   let oldIcon : string;
   if (user.User_profileIconURL) {
@@ -235,3 +256,60 @@ router.post('/signout', async (req, res, next) => {
 });
 
 export default router;
+
+/*
+  //내부 업데이트 쿼리 메소드.
+  //사용법 : 일부반 바꿀 경우, 해당 input 자리에 null 값을 넣으면 됩니다.
+  async function _updateQuery(User1, name1, password1, id) {
+    if (name1 && password1) {
+      return await createQueryBuilder("user")
+        .update(User1)
+        .set({ name: name1, password: password1 })
+        .where({ id: id })
+        .execute();
+    } else if (password1 === null) {
+      return await createQueryBuilder("user")
+        .update(User1)
+        .set({ name: name1 })
+        .where({ id: id })
+        .execute();
+    } else if (name1 === null) {
+      return await createQueryBuilder("user")
+        .update(User1)
+        .set({ password: password1 })
+        .where({ id: id })
+        .execute();
+    };
+  };
+  */
+/**
+ * 회원정보 수정
+ * req: name or password 또는 둘다.
+ * res: message : edit success 또는 no edit info provied.
+ */
+/*
+router.patch('/', async (req, res, next) => {
+  try {
+    const user = await createQueryBuilder("user")
+      .where("user.id = :id", { id: req.session.passport.user })
+      .execute();
+    if (user.length !== 0) {
+      if (req.body.name && req.body.password) {
+        let hashedPassword = await bcrypt.hash(req.body.password, 12);
+        _updateQuery(User, req.body.name, hashedPassword, req.session.passport.user);
+      } else if (req.body.name) {
+        _updateQuery(User, req.body.name, null, req.session.passport.user);
+      } else if (req.body.password) {
+        let hashedPassword = await bcrypt.hash(req.body.password, 12);
+        _updateQuery(User, null, hashedPassword, req.session.passport.user);
+      } else return res.status(400).send({ data: null, message: "no edit info provied" });
+      //반환은 성공여부만.
+      return res.status(200).send({ data: null, message: "edit success" });
+    }
+  } catch (e) {
+    console.error(e);
+    // 에러 처리를 여기서
+    return next(e);
+  }
+});
+*/

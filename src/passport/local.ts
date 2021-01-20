@@ -11,7 +11,7 @@ export default () => {
   }, async (email, password, done) => {
     try {
       const user = (await createQueryBuilder("user")
-      .where("user.email = :email", { email })
+      .where("email = :email", { email })
       .execute())[0];
       if (!user || user.length === 0) {
         return done(null, false, { message: 'email address not exist' });

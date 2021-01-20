@@ -106,6 +106,7 @@ router.get('/:id', async (req, res, next) => {
     const viewcounter = await createQueryBuilder()
       .update(Form)
       .set({views: () => "views + 1"})
+      .set({updatedAt: () => "updated_at"})
       .where("id = :id", { id: req.params.id })
       .execute();
     if (!viewcounter.affected) {

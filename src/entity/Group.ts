@@ -16,6 +16,9 @@ export class Group {
   @Column('boolean', { default: false })
   isDefaultGroup: boolean;
 
+  @Column({ default: 0 })
+  views: number;
+
   @CreateDateColumn({
     name: "created_at"
   })

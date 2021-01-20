@@ -29,7 +29,7 @@ export class Suggestion {
   })
   updatedAt: Date;
 
-  @ManyToOne(type => User, user => user.suggestions)
+  @ManyToOne(type => User, user => user.suggestions, { onDelete: 'CASCADE' })
   user: User;
 
 }

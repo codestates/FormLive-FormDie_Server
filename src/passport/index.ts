@@ -12,7 +12,7 @@ export default () => {
   passport.deserializeUser(async (id:number, done) => {
     try {
       const user = await createQueryBuilder("user")
-      .where("user.id = :id", { id })
+      .where("id = :id", { id })
       .execute();
       return done(null, user); //이것이 req.user가 되는데 따로 타이핑을 해줘야 함.
     } catch (err) {

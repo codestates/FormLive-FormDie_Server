@@ -14,7 +14,7 @@ export class Userform {
   @Column()
   formId: number;
 
-  @Column({ nullable: true })
+  @Column({ length: 20000, nullable: true })
   contents: string;
 
   @Column('boolean', { default: false })
@@ -30,7 +30,7 @@ export class Userform {
   })
   updatedAt: Date;
 
-  @ManyToOne(type => User, user => user.userforms)
+  @ManyToOne(type => User, user => user.userforms, { onDelete: 'CASCADE' })
   user: User;
 
   @ManyToOne(type => Form, form => form.userforms)

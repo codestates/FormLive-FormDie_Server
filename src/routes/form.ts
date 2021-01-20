@@ -87,7 +87,23 @@ router.patch('', async (req, res, next) => {
 
 });
 
+//userform 테이블에서 유저가 작성한 폼 내용 삭제
 router.delete('', async (req, res, next) => {
+  try {
+    const isDeleted = (await createQueryBuilder()
+      .delete()
+      .from(Userform)
+      .where("userId = :userId", { userId: req.session.passport.user })
+      .andWhere("formId = :formId", { formId: req.body.formId })
+      .execute()).affected;
+    if (isDeleted) {
+      res.send({ data: null, message: 'form content delete complete' });
+    } else {
+      res.status(400).send({ data: null, message: "not deleted. maybe not exist any more?" });
+    }
+  } catch (err) {
+    res.status(400).send({ data: null, message: "not authorized" });
+  }
 
 });
 

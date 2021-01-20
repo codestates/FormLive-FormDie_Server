@@ -28,13 +28,13 @@ export class Relation {
   })
   updatedAt: Date;
 
-  @ManyToOne(type => User, user => user.relations)
+  @ManyToOne(type => User, user => user.relations, { onDelete: 'CASCADE' })
   user: User;
 
   @ManyToOne(type => Form, form => form.relations)
   form: Form;
 
-  @ManyToOne(type => Group, group => group.relations)
+  @ManyToOne(type => Group, group => group.relations, { onDelete: 'CASCADE' })
   group: Group;
 
 }

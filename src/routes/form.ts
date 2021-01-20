@@ -1,5 +1,5 @@
 import * as express from 'express';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt'; //비밀번호 암호화모듈 사용 필요?
 import * as passport from 'passport';
 import * as multer from 'multer';
 import * as fs from 'fs';
@@ -13,6 +13,7 @@ import { Relation } from '../entity/Relation';
 import { Suggestion } from '../entity/Suggestion';
 import { User } from "../entity/User";
 import { Userform } from '../entity/Userform';
+import { totalmem } from 'os';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ const router = express.Router();
  * 개별 폼들 리스트 받아오기 
  * req: req.session.passport.user, (queryString: q, page, sort)
  * 하드코딩된 폼 규격들 중에 q값에 맞는 것을 찾아 전송해줌
- * res: user. id, email, name, profileIconURL, isAdmin
+ * res: form 데이터 쿼리문에 따라 응답.
  */
 router.get('/', async (req, res, next) => {
   try {
@@ -30,42 +31,57 @@ router.get('/', async (req, res, next) => {
       .execute();
     //console.log(user); 유저가 존재하면,[]가 뜬다.
     if (user.length !== 0) {
-      /* //SQL문을 ORM문으로 변환. 개별 form 리스트 받기
-      SELECT * FROM form //폼 받아와라
-      WHERE form.title = req.query.q //그중 query에 맞는 것을 찾아서.
-      if(req.query.sort === 'popular'){
-        sort에 따라 ORDER BY views DESC     
-      } else{
-        ORDER BY createdAt DESC
+      //각각의 변수 유무에 따른 분리.
+      let sort = '', q = '', pageLimit = 12, offset = 0;
+      //분기점. 쿼리가 있는 경우에 따라 분리.
+      if (req.query.sort === 'popular') { //조회순 검색이면.
+        sort = 'Form_views'; //`ORDER BY views DESC`;   
+      } else { //아니면 최신순.
+        sort = `updated_at`;
       }
-      LIMIT 12 // 12개씩 끊지만 ~24, ~36 이렇게 바꿔야 한다?
-
-      
-      attributes: ['id', 'nickname'],
-      limit: parseInt(req.query.limit, 10),
-      offset: parseInt(req.query.offset, 10),
-
-      q = '' 빈 문자열로 초기화한 다음에,
-      if(req.query.q) {
-        
-      } else if(req.query.sort === 'popular'){
-
-      } else if(){
-
+      //주의! 페이징할때 검색결과값이 12 이하이면, req.query.page에 2이상 입력시 0이 반환됩니다.
+      if (!req.query.page) { //NaN 이나 입력안한 undefined일 경우,
+        offset = 0;
+      } else {
+        offset = pageLimit * (Number(req.query.page) - 1); //or parseInt(req.query.offset, 12);
       }
+      let getForm = []; //배열로 일괄 초기화 변경
+      if (req.query.q) { //제목검색 쿼리가 있으면,
+        q = String(req.query.q);
 
-      */
-      let sort = req.query.page;
-      let q = req.query.q;
-      const getUserForm = await createQueryBuilder("Userform")
-        //.where(" = :", { :  })
-        //.andWhere(" = :formId", { formId: req.query })
+        getForm = await createQueryBuilder("form")
+          //{ title: `%${q}%` } like문 추가 필요.
+          .where("title = :title", { title: `${q}` })
+          .skip(offset)
+          .take(offset + pageLimit) //.limit(X)
+          .orderBy(`${sort}`, "DESC")
+          .execute();
+      } else { //없으면
+        getForm = await createQueryBuilder("form")
+          //.where("title = :title", { title: `%${q}%` })
+          .skip(offset)
+          .take(offset + pageLimit) //.limit(X)
+          .orderBy(`${sort}`, "DESC")
+          .execute();
+      }
+      //총 form 갯수가 저장된 변수.
+      let totalFormCount = await createQueryBuilder("form")
+        .select(`SUM(form.id)`, `total`)
         .execute();
 
+      //for 문 반복으로 전체 가공 취소. map으로 일괄적인 가공으로 변경.
+      //다시 for문으로 전체 가공 예정.
+      let data = getForm.map(function (array) {
+        return array;
+      });
 
-      //gerUserForm 다듬어서 send 할 것. data와 message로.
-      return res.status(200).send(getUserForm);
-
+      return res.status(200).send(
+        {
+          data: data,
+          total: totalFormCount[0].total,
+          message: "get form list success"
+        }
+      );
     }
   } catch (e) {
     console.error(e);
@@ -108,18 +124,3 @@ router.delete('', async (req, res, next) => {
 });
 
 export default router;
-
-/**
-      return res.status(200).send( //01.19 저녁 meeting. RowDataPacket 가공하여 send로 변경.
-        {
-          data: {
-            id: user[0].User_id,
-            email: user[0].User_email,
-            name: user[0].User_name,
-            profileIconURL: user[0].User_profileIconURL,
-            isAdmin: user[0].User_isAdmin
-          },
-          message: "successfully got user info"
-        }
-      );
- */

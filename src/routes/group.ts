@@ -34,20 +34,20 @@ router.patch('', async (req, res, next) => {
 
 router.delete('', async (req, res, next) => {
   try {
-    await createQueryBuilder()
-      .delete()
-      .from(Group)
-      .where("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 0 })
-      .andWhere("id = :id", { id: req.body.groupId })
-      .execute();
     const isDeleted = (await createQueryBuilder()
       .delete()
       .from(Relation)
       .where("userId = :userId", { userId: req.session.passport.user })
       .andWhere("groupId = :groupId", { groupId: req.body.groupId })
       .execute()).affected;
+    await createQueryBuilder()
+      .delete()
+      .from(Group)
+      .where("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 0 })
+      .andWhere("id = :id", { id: req.body.groupId })
+      .execute();
     if (isDeleted) {
-      res.send({ data: null, message: 'form content delete complete' });
+      res.send({ data: null, message: 'form group delete complete' });
     } else {
       res.status(400).send({ data: null, message: "not deleted. maybe not exist any more?" });
     }

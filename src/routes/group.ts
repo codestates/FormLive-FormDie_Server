@@ -25,7 +25,43 @@ router.post('/:id', async (req, res, next) => {
 });
 
 router.post('', async (req, res, next) => {
+  try {
 
+    //Group 테이블에 제목을 등록
+    const group = (await createQueryBuilder("group")
+      .insert()
+      .into(Group)
+      .values([
+        { title: req.body.title }
+      ])
+      .execute());
+
+    //userId, formId, groupId를 정리해서 ORM에 넣을 수 있는 형식으로 가공
+    let relationArr = [];
+    for (let formId of req.body.forms) {
+      relationArr.push({
+        userId: req.session.passport.user,
+        formId,
+        groupId: group.identifiers[0].id
+      })
+    }
+
+    //Relation 테이블에 그 그룹의 소유 유저와 소속됨 폼들을 등록
+    await createQueryBuilder("relation")
+      .insert()
+      .into(Relation)
+      .values(relationArr)
+      .execute();    
+    res.send({ data: null, message: "new user group created" })
+  } catch (error) {
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+    
+  };
 });
 
 router.patch('', async (req, res, next) => {
@@ -34,12 +70,15 @@ router.patch('', async (req, res, next) => {
 
 router.delete('', async (req, res, next) => {
   try {
+    //Relation 테이블에서 삭제
     const isDeleted = (await createQueryBuilder()
       .delete()
       .from(Relation)
       .where("userId = :userId", { userId: req.session.passport.user })
       .andWhere("groupId = :groupId", { groupId: req.body.groupId })
       .execute()).affected;
+
+    //Group이 유저 생성 그룹일 경우 Group 테이블에서도 삭제
     await createQueryBuilder()
       .delete()
       .from(Group)

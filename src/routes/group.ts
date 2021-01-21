@@ -17,6 +17,41 @@ import { Userform } from '../entity/Userform';
 const router = express.Router();
 
 router.get('', async (req, res, next) => {
+  let sort = '', q = '', pageLimit = 10, offset = 0;
+  if (!req.query.page) { //NaN 이나 입력안한 undefined일 경우,
+    offset = 0;
+  } else {
+    offset = pageLimit * (Number(req.query.page) - 1);
+  }
+  if (req.query.sort === 'popular') { //조회순 검색이면.
+    sort = 'Group_views'; //`ORDER BY views DESC`;   
+  } else { //아니면 최신순.
+    sort = `Group_updated_at`;
+  }
+  if (req.query.q) { //제목검색 쿼리가 있으면,
+    q = String(req.query.q);
+  }
+
+  const rawGroups = await getRepository(Group)
+    .createQueryBuilder('group')
+    .leftJoinAndSelect('group.relations', 'relations')
+    .where("title like :title", { title: `%${q}%` })
+    .andWhere("userId = :userId", { userId: req.session.passport.user })
+    .skip(offset)
+    .take(offset + pageLimit) //.limit(X)
+    .orderBy(`${sort}`, "DESC")
+    .getMany();
+
+  const groupsCount = await getRepository(Group)
+    .createQueryBuilder('group')
+    .leftJoinAndSelect('group.relations', 'relations')
+    .where("title like :title", { title: `%${q}%` })
+    .andWhere("userId = :userId", { userId: req.session.passport.user })
+    .getCount();
+
+  console.log(groupsCount);
+  res.send(rawGroups);
+
 
 });
 

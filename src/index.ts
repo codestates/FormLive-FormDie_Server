@@ -42,7 +42,6 @@ else {
         credentials: true,
     }));
 }
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
@@ -51,10 +50,8 @@ app.use(expressSession({
     saveUninitialized: false,
     secret: process.env.COOKIE_SECRET,
     cookie: {
-        httpOnly: true,
-        secure: false,
-        domain: prod ? '.yangsikdang.ml' : undefined,
-        sameSite: 'none'
+        domain: 'localhost',
+        path: '/'
     },
 }));
 app.use(passport.initialize());

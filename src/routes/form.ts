@@ -66,6 +66,7 @@ router.get('/', async (req, res, next) => {
       }
       //총 form 갯수가 저장된 변수. 처음에 썼던 SUM은 호환성 문제로 getCount로 변경
       let total = await createQueryBuilder("form")
+        .where("title like :title", { title: `%${q}%` })
         .getCount();
 
       //for 문 반복으로 전체 가공 d완료.

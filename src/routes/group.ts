@@ -1,5 +1,5 @@
 import * as express from 'express';
-import * as bcrypt from 'bcrypt'; //비밀번호 암호화모듈 사용 필요?
+import * as bcrypt from 'bcrypt';
 import * as passport from 'passport';
 import * as multer from 'multer';
 import * as fs from 'fs';
@@ -13,10 +13,156 @@ import { Relation } from '../entity/Relation';
 import { Suggestion } from '../entity/Suggestion';
 import { User } from "../entity/User";
 import { Userform } from '../entity/Userform';
+import { totalmem } from 'os';
 
 const router = express.Router();
 
-router.get('', async (req, res, next) => {
+
+/**
+ * 폼그룹 리스트 받아오기 
+ * req: /req.session.passport.user, (queryString: q, page, sort)
+ *      /폼그룹들 중에 q값에 맞는 것을 찾아 전송해줌
+ * res: /group 데이터 쿼리문에 따라 응답.
+ */
+router.get('/', async (req, res, next) => {
+  try {
+    //일단, 사전에 세션 아이디 여부를 검증합니다.
+    const user = await createQueryBuilder("user")
+      .where("id = :id", { id: req.session.passport.user })
+      .execute();
+    //console.log(user); 유저가 존재하면,[]가 뜬다.
+    if (user.length !== 0) {
+      //각각의 변수 유무에 따른 분리.
+      let sort = '', q = '', pageLimit = 12, offset = 0;
+      //분기점. 쿼리가 있는 경우에 따라 분리.
+      if (req.query.sort === 'popular') { //조회순 검색이면.
+        sort = 'views'; //`ORDER BY views DESC`;   
+      } else { //아니면 최신순.
+        sort = `updated_at`;
+      }
+      //주의! 페이징할때 검색결과값이 12 이하이면, req.query.page에 2이상 입력시 0이 반환됩니다.
+      if (!req.query.page) { //NaN 이나 입력안한 undefined일 경우,
+        offset = 0;
+      } else {
+        offset = pageLimit * (Number(req.query.page) - 1); //or parseInt(req.query.offset, 12);
+      }
+
+      /**
+       * relations 테이블에서 admin의 userId와 해당 유저의 userId로 필터링을 한 후,
+       * 그 groupId를 이용하여 groups 테이블에서 title과 description을 가져온다.
+       * 결과적으로 groupId, title, description, formId를 클라이언트에게 보내준다.
+       * taskCard 외 gitbook 내용 추가. relation.formid도 필요하다
+       * + views, updated_at 추가, 그룹에 담긴 총갯수
+       */
+      let getGroupInfo = []; //배열로 일괄 초기화 변경
+      let getFormidOfGroup = [];
+      let getGroupCount = [];
+
+      if (req.query.q) { //제목검색 쿼리가 있으면,
+        q = String(req.query.q);
+
+        getGroupInfo = await createQueryBuilder()
+          .select("id")
+          .addSelect("title")
+          .addSelect("description")
+          .addSelect("views") //group.views
+          .addSelect("updated_at")
+          .from(Group, "group")
+          .where("title like :title", { title: `%${q}%` })
+          .andWhere(getGroupId => {
+            let subQuery = getGroupId.subQuery()
+              .select("groupId")
+              .from(Relation, "relation")
+              .where("userId = :userId", { userId: req.session.passport.user })
+              .getQuery();
+            return "group.id IN " + subQuery;
+          })
+          .skip(offset)
+          .take(offset + pageLimit) //.limit(X)
+          .orderBy(`${sort}`, "DESC")
+          .execute();
+
+        getFormidOfGroup = await createQueryBuilder()
+          .select("formId")
+          .addSelect("updated_at")
+          .from(Relation, "relation")
+          .where("userId = :userId", { userId: req.session.passport.user })
+          .execute();
+        //'SELECT COUNT(groupId) FROM `relation` `relation` 
+        // WHERE userId = ? AND group.id
+        // IN (SELECT groupId FROM `relation` `relation`
+        // WHERE userId = ?)'  
+        // && select formId, updated_at from relation where userid = ?
+        // && select id, title, description, views, updated_at
+        // from group where title LIKE %q% and ~~~~~~~~~~~
+        // -> 분리 결정
+
+        //그룹카운트를 받아오는 where절에 if문으로 분기를 가르면서 동시에 join을 붙이는 난이도로 인해 쿼리 분리.
+        //또는, userId 가 3개의 테이블에 있어서 유저아이디를 통해 RELATION JOIN을 한다면???
+        //잠깐... Group 테이블에는 userId가 없다.
+        //그러므로 폼그룹의 전체 갯수를 잡으면 '남의 폼그룹' 인지, '자신'의 폼그룹인지는
+        //Relation 테이블을 통해서 잡아도 물리적으로 섞일 가능성이 있다!?
+        getGroupCount = await createQueryBuilder()
+          .select("COUNT(groupId)")
+          .from(Relation, "relation")
+          .where("userId = :userId", { userId: req.session.passport.user })
+          .execute();
+
+      } else { //제목검색 쿼리(where LIKE)가 없으면
+
+        getGroupInfo = await createQueryBuilder()
+          .select("id")
+          .addSelect("title")
+          .addSelect("description")
+          .addSelect("views") //group.views
+          .addSelect("updated_at")
+          .from(Group, "group")
+          .where("title like :title", { title: `%${q}%` })
+          .andWhere(getGroupId => {
+            let subQuery = getGroupId.subQuery()
+              .select("groupId")
+              .from(Relation, "relation")
+              .where("userId = :userId", { userId: req.session.passport.user })
+              .getQuery();
+            return "group.id IN " + subQuery;
+          })
+          .skip(offset)
+          .take(offset + pageLimit) //.limit(X)
+          .orderBy(`${sort}`, "DESC")
+          .execute();
+
+        getFormidOfGroup = await createQueryBuilder()
+          .select("formId")
+          .addSelect("updated_at")
+          .from(Relation, "relation")
+          .where("userId = :userId", { userId: req.session.passport.user })
+          .execute();
+
+        getGroupCount = await createQueryBuilder()
+          .select("COUNT(groupId)")
+          .from(Relation, "relation")
+          .where("userId = :userId", { userId: req.session.passport.user })
+          .execute();
+
+      }
+
+      return res.status(200).send(
+        {
+          data: //이 부분에 대한 data 가공 후처리 작업이 필요. (현재는 다 json 안의 json 중첩 형태.)
+          {
+            getGroupCount,
+            getGroupInfo,
+            getFormidOfGroup
+          },
+          message: "get form list success"
+        }
+      );
+    }
+  } catch (e) {
+    console.error(e);
+    // 에러 처리를 여기서
+    return next(e);
+  }
 
 });
 
@@ -51,7 +197,7 @@ router.post('', async (req, res, next) => {
       .insert()
       .into(Relation)
       .values(relationArr)
-      .execute();    
+      .execute();
     res.send({ data: { groupId: group.identifiers[0].id, title: req.body.title, forms: req.body.forms }, message: "new user group created" })
   } catch (error) {
     console.error(error.message);
@@ -60,7 +206,7 @@ router.post('', async (req, res, next) => {
     } else {
       res.status(400).send({ data: null, message: error.message })
     }
-    
+
   };
 });
 

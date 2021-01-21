@@ -126,9 +126,11 @@ router.get('/:id', async (req, res, next) => {
     } else {
       return res.send({
         data: {
+          formId: form.Form_id,
           title: form.Form_title,
           description: form.Form_description,
           views: form.Form_views,
+          isComplete: userform.Userform_isComplete,
           updated_at: form.Form_updated_at,
           contents: JSON.parse(userform.Userform_contents)
         },

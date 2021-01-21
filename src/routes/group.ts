@@ -52,7 +52,7 @@ router.post('', async (req, res, next) => {
       .into(Relation)
       .values(relationArr)
       .execute();    
-    res.send({ data: null, message: "new user group created" })
+    res.send({ data: { groupId: group.identifiers[0].id, title: req.body.title, forms: req.body.forms }, message: "new user group created" })
   } catch (error) {
     console.error(error.message);
     if (error.message === "Cannot read property 'user' of undefined") {

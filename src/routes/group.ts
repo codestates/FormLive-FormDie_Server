@@ -1,5 +1,5 @@
 import * as express from 'express';
-import * as bcrypt from 'bcrypt'; //비밀번호 암호화모듈 사용 필요?
+import * as bcrypt from 'bcrypt';
 import * as passport from 'passport';
 import * as multer from 'multer';
 import * as fs from 'fs';
@@ -13,6 +13,7 @@ import { Relation } from '../entity/Relation';
 import { Suggestion } from '../entity/Suggestion';
 import { User } from "../entity/User";
 import { Userform } from '../entity/Userform';
+import { totalmem } from 'os';
 
 const router = express.Router();
 
@@ -52,7 +53,6 @@ router.get('', async (req, res, next) => {
   console.log(groupsCount);
   res.send(rawGroups);
 
-
 });
 
 router.post('/:id', async (req, res, next) => {
@@ -86,7 +86,7 @@ router.post('', async (req, res, next) => {
       .insert()
       .into(Relation)
       .values(relationArr)
-      .execute();    
+      .execute();
     res.send({ data: { groupId: group.identifiers[0].id, title: req.body.title, forms: req.body.forms }, message: "new user group created" })
   } catch (error) {
     console.error(error.message);
@@ -95,7 +95,7 @@ router.post('', async (req, res, next) => {
     } else {
       res.status(400).send({ data: null, message: error.message })
     }
-    
+
   };
 });
 

@@ -25,73 +25,68 @@ const router = express.Router();
  */
 router.get('/', async (req, res, next) => {
   try {
-    //일단, 사전에 세션 아이디 여부를 검증합니다.
-    const user = await createQueryBuilder("user")
-      .where("id = :id", { id: req.session.passport.user })
-      .execute();
-    //console.log(user); 유저가 존재하면,[]가 뜬다.
-    if (user.length !== 0) {
-      //각각의 변수 유무에 따른 분리.
-      let sort = '', q = '', pageLimit = 12, offset = 0;
-      //분기점. 쿼리가 있는 경우에 따라 분리.
-      if (req.query.sort === 'popular') { //조회순 검색이면.
-        sort = 'Form_views'; //`ORDER BY views DESC`;   
-      } else { //아니면 최신순.
-        sort = `updated_at`;
-      }
-      //주의! 페이징할때 검색결과값이 12 이하이면, req.query.page에 2이상 입력시 0이 반환됩니다.
-      if (!req.query.page) { //NaN 이나 입력안한 undefined일 경우,
-        offset = 0;
-      } else {
-        offset = pageLimit * (Number(req.query.page) - 1); //or parseInt(req.query.offset, 12);
-      }
-      let getForm = []; //배열로 일괄 초기화 변경
-      if (req.query.q) { //제목검색 쿼리가 있으면,
-        q = String(req.query.q);
 
-        getForm = await createQueryBuilder("form")
-          //{ title: `%${q}%` } like문 추가 필요.
-          .where("title like :title", { title: `%${q}%` })
-          .skip(offset)
-          .take(offset + pageLimit) //.limit(X)
-          .orderBy(`${sort}`, "DESC")
-          .execute();
-      } else { //없으면
-        getForm = await createQueryBuilder("form")
-          //.where("title = :title", { title: `%${q}%` })
-          .skip(offset)
-          .take(offset + pageLimit) //.limit(X)
-          .orderBy(`${sort}`, "DESC")
-          .execute();
-      }
-      //총 form 갯수가 저장된 변수. 처음에 썼던 SUM은 호환성 문제로 getCount로 변경
-      let total = await createQueryBuilder("form")
-        .where("title like :title", { title: `%${q}%` })
-        .getCount();
-
-      //for 문 반복으로 전체 가공 d완료.
-
-      let content = [];
-      for (let el of getForm) {
-        content.push({
-          formId: el.Form_id,
-          title: el.Form_title,
-          description: el.Form_description,
-          views: el.Form_views,
-          updated_at: el.Form_updated_at
-        });
-      }
-
-      return res.status(200).send(
-        {
-          data: {
-            total,
-            content
-          },
-          message: "get form list success"
-        }
-      );
+    //각각의 변수 유무에 따른 분리.
+    let sort = '', q = '', pageLimit = 12, offset = 0;
+    //분기점. 쿼리가 있는 경우에 따라 분리.
+    if (req.query.sort === 'popular') { //조회순 검색이면.
+      sort = 'Form_views'; //`ORDER BY views DESC`;   
+    } else { //아니면 최신순.
+      sort = `updated_at`; //Form_updated_at도 테스트 필요 가능성
     }
+    //주의! 페이징할때 검색결과값이 12 이하이면, req.query.page에 2이상 입력시 0이 반환됩니다.
+    if (!req.query.page) { //NaN 이나 입력안한 undefined일 경우,
+      offset = 0;
+    } else {
+      offset = pageLimit * (Number(req.query.page) - 1); //or parseInt(req.query.offset, 12);
+    }
+    let getForm = []; //배열로 일괄 초기화 변경
+    if (req.query.q) { //제목검색 쿼리가 있으면,
+      q = String(req.query.q);
+
+      getForm = await createQueryBuilder("form")
+        //{ title: `%${q}%` } like문 추가 필요.
+        .where("title like :title", { title: `%${q}%` })
+        .skip(offset)
+        .take(offset + pageLimit) //.limit(X)
+        .orderBy(`${sort}`, "DESC")
+        .execute();
+    } else { //없으면
+      getForm = await createQueryBuilder("form")
+        //.where("title = :title", { title: `%${q}%` })
+        .skip(offset)
+        .take(offset + pageLimit) //.limit(X)
+        .orderBy(`${sort}`, "DESC")
+        .execute();
+    }
+    //총 form 갯수가 저장된 변수. 처음에 썼던 SUM은 호환성 문제로 getCount로 변경
+    let total = await createQueryBuilder("form")
+      .where("title like :title", { title: `%${q}%` })
+      .getCount();
+
+    //for 문 반복으로 전체 가공 d완료.
+
+    let content = [];
+    for (let el of getForm) {
+      content.push({
+        formId: el.Form_id,
+        title: el.Form_title,
+        description: el.Form_description,
+        views: el.Form_views,
+        updated_at: el.Form_updated_at
+      });
+    }
+
+    return res.status(200).send(
+      {
+        data: {
+          total,
+          content
+        },
+        message: "get form list success"
+      }
+    );
+
   } catch (e) {
     console.error(e);
     // 에러 처리를 여기서
@@ -103,10 +98,10 @@ router.get('/', async (req, res, next) => {
 
 //get /:id 한 번 씩 올 때마다 view가 1개씩 올라감
 router.get('/:id', async (req, res, next) => {
-  try {    
+  try {
     const viewcounter = await createQueryBuilder()
       .update(Form)
-      .set({views: () => "views + 1", updatedAt: () => "updated_at"})
+      .set({ views: () => "views + 1", updatedAt: () => "updated_at" })
       .where("id = :id", { id: req.params.id })
       .execute();
     if (!viewcounter.affected) {
@@ -165,7 +160,7 @@ router.post('', async (req, res, next) => {
     } else {
       res.status(400).send({ data: null, message: "userform duplicate. please use PATCH method to edit." })
     }
-    
+
   };
 });
 

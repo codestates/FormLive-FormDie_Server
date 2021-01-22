@@ -74,13 +74,14 @@ router.get('', async (req, res, next) => {
       },
       message: "get history list success"
     });
-  } catch (err) {
-    console.log('not logged in');
-    res.send({
-      data: null,
-      message: "not authorized"
-    });;
-  }
+  } catch (error) {
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
 
 });
 

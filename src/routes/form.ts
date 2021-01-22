@@ -87,11 +87,14 @@ router.get('/', async (req, res, next) => {
       }
     );
 
-  } catch (e) {
-    console.error(e);
-    // 에러 처리를 여기서
-    return next(e);
-  }
+  } catch (error) {
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
 
 });
 
@@ -134,9 +137,13 @@ router.get('/:id', async (req, res, next) => {
       })
     }
   } catch (error) {
-    console.error(error);
-    return res.status(401).send({ data: null, message: "not authorized" });
-  }
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
 
 });
 
@@ -179,8 +186,12 @@ router.patch('', async (req, res, next) => {
       .execute();
     res.send({ data: null, message: "userform edit success" })
   } catch (error) {
-    console.error(error);
-    res.status(401).send({ data: null, message: "not authorized" });
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
   };
 
 });
@@ -199,9 +210,14 @@ router.delete('', async (req, res, next) => {
     } else {
       res.status(400).send({ data: null, message: "not deleted. maybe not exist any more?" });
     }
-  } catch (err) {
-    res.status(401).send({ data: null, message: "not authorized" });
-  }
+  } catch (error) {
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
 
 });
 

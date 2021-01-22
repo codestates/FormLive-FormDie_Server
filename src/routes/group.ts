@@ -37,8 +37,9 @@ router.get('', async (req, res, next) => {
     const rawGroups = await getRepository(Group)
       .createQueryBuilder('group')
       .leftJoinAndSelect('group.relations', 'relations')
-      .where("title like :title", { title: `%${q}%` })
-      .andWhere("userId = :userId", { userId: req.session.passport.user })
+      .where("userId = :userId", { userId: req.session.passport.user })
+      .orWhere("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 })
+      .andWhere("title like :title", { title: `%${q}%` })      
       .skip(offset)
       .take(offset + pageLimit) //.limit(X)
       .orderBy(`${sort}`, "DESC")
@@ -47,8 +48,9 @@ router.get('', async (req, res, next) => {
     const groupsCount = await getRepository(Group)
       .createQueryBuilder('group')
       .leftJoinAndSelect('group.relations', 'relations')
-      .where("title like :title", { title: `%${q}%` })
-      .andWhere("userId = :userId", { userId: req.session.passport.user })
+      .where("userId = :userId", { userId: req.session.passport.user })
+      .orWhere("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 })
+      .andWhere("title like :title", { title: `%${q}%` })
       .getCount();
     
     let content = [];
@@ -120,8 +122,8 @@ router.get('', async (req, res, next) => {
 
 });
 
-router.post('/:id', async (req, res, next) => {
-
+router.get('/:id', async (req, res, next) => {
+  
 });
 
 router.post('', async (req, res, next) => {

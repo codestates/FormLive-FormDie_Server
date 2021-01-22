@@ -76,11 +76,47 @@ router.get('', async (req, res, next) => {
       message: "get group list success"
     });
   } catch (err) {
-    console.error(err);
-    res.status(401).send({ data: null, message: "not authorized" });
-  }
+    console.log('not logged in');
+    const rawGroups = await getRepository(Group)
+      .createQueryBuilder('group')
+      .leftJoinAndSelect('group.relations', 'relations')
+      .where("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 })
+      .skip(offset)
+      .take(offset + pageLimit) //.limit(X)
+      .orderBy(`${sort}`, "DESC")
+      .getMany();
 
-  
+    const groupsCount = await getRepository(Group)
+      .createQueryBuilder('group')
+      .leftJoinAndSelect('group.relations', 'relations')
+      .where("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 })
+      .getCount();
+    
+    let content = [];
+    for (let group of rawGroups) {
+      let forms = [];
+      for (let el of group.relations) {
+        forms.push(el.formId);
+      }
+      content.push({
+        groupId: group.id,
+        title: group.title,
+        description: group.description,
+        views: group.views,
+        isDefaultGroup: group.isDefaultGroup,
+        updatedAt: group.updatedAt,
+        forms
+      })
+    }    
+    
+    res.send({
+      data: {
+        total: groupsCount,
+        content
+      },
+      message: "get default group list success"
+    });;
+  }
 
 });
 

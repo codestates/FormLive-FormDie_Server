@@ -50,7 +50,7 @@ router.get('', async (req, res, next) => {
       .where("title like :title", { title: `%${q}%` })
       .andWhere("userId = :userId", { userId: req.session.passport.user })
       .getCount();
-    
+
     let content = [];
     for (let group of rawGroups) {
       let forms = [];
@@ -66,8 +66,8 @@ router.get('', async (req, res, next) => {
         updatedAt: group.updatedAt,
         forms
       })
-    }    
-    
+    }
+
     res.send({
       data: {
         total: groupsCount,
@@ -91,7 +91,7 @@ router.get('', async (req, res, next) => {
       .leftJoinAndSelect('group.relations', 'relations')
       .where("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 })
       .getCount();
-    
+
     let content = [];
     for (let group of rawGroups) {
       let forms = [];
@@ -107,8 +107,8 @@ router.get('', async (req, res, next) => {
         updatedAt: group.updatedAt,
         forms
       })
-    }    
-    
+    }
+
     res.send({
       data: {
         total: groupsCount,
@@ -164,7 +164,31 @@ router.post('', async (req, res, next) => {
   };
 });
 
+/**
+ * 유저가 폼 그룹 이름을 수정 할 때
+ * req: 헤더의 session쿠키, body의 title
+ * title 수정 Only
+ * res: 성공시 message: "formGroup edit success",
+ *      실패시 error.next 리턴
+ */
 router.patch('', async (req, res, next) => {
+  try {
+    await createQueryBuilder("group")
+      .update(Group)
+      .set({
+        title: req.body.title
+      })
+      .where({
+        id: req.body.groupId
+      })
+      .execute();
+    res.send({ data: null, message: "formGroup edit success" })
+
+  } catch (error) {
+    //에러 처리
+    console.log(error);
+    return next(error);
+  }
 
 });
 

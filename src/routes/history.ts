@@ -60,6 +60,7 @@ router.get('', async (req, res, next) => {
         groupId: group.id,
         title: group.title,
         description: group.description,
+        organization: group.organization,
         views: group.views,
         isDefaultGroup: group.isDefaultGroup,
         updatedAt: group.updatedAt,

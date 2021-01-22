@@ -13,6 +13,9 @@ export class Group {
   @Column({ nullable: true })
   description: string;
 
+  @Column({ nullable: true })
+  organization: string;
+
   @Column('boolean', { default: false })
   isDefaultGroup: boolean;
 

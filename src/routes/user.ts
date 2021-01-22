@@ -47,7 +47,7 @@ router.get('/', async (req, res, next) => {
             profileIconURL: user[0].User_profileIconURL,
             isAdmin: user[0].User_isAdmin
           },
-          message: "successfully got user info"          
+          message: "successfully got user info"
         }
       );
     }
@@ -70,15 +70,15 @@ router.post('/', async (req, res, next) => {
     const exUser = await createQueryBuilder("user")
 
 
-    //   >>>>>>>>>>>>>>>> where절에 user.email 말고 그냥 email 쓰자!!!! <<<<<<<<<<<<<<<<<<<<<<
+      //   >>>>>>>>>>>>>>>> where절에 user.email 말고 그냥 email 쓰자!!!! <<<<<<<<<<<<<<<<<<<<<<
 
 
-      .where("email = :email", { email: req.body.email })   
+      .where("email = :email", { email: req.body.email })
       .execute();
     //console.log(exUser); 성공시 []가 뜬다.
     if (exUser.length !== 0) {
       console.log('이미 사용중인 아이디로 회원가입 시도 탐지');
-      return res.status(403).send({ data: null, message: '이미 사용중인 아이디입니다.'});
+      return res.status(403).send({ data: null, message: '이미 사용중인 아이디입니다.' });
     }
     //bcrypt는 테스트 필요.
     const hashedPassword = await bcrypt.hash(req.body.password, 12); // salt는 10~13 사이로
@@ -125,7 +125,7 @@ router.delete('/', async (req, res, next) => {
           data: null,
           message: "password required"
         })
-      }      
+      }
       if (result) {
         await createQueryBuilder("user")
           .delete()
@@ -134,7 +134,7 @@ router.delete('/', async (req, res, next) => {
           .execute();
         console.log(`탈퇴한 회원입니다: ${req.session.passport.user}`);
         req.logout(); //탈퇴했으면 로그아웃시키고, 세션도 끊어줘야됨. 
-        return res.status(302).redirect('/'); //그리고 홈화면으로 API도 리다이렉트시켜야됨.
+        return res.status(302).send({ data: null, message: "quit process success" });
       } else {
         return res.status(400).send({
           data: null,
@@ -154,31 +154,31 @@ router.patch('', async (req, res, next) => {
   try {
     const user = await createQueryBuilder("user")
       .where("id = :id", { id: req.session.passport.user })
-      .execute();    
+      .execute();
     if (user.length !== 0) {
       if (req.body.name && req.body.password) {
         const hashedPassword = await bcrypt.hash(req.body.password, 12);
         await createQueryBuilder("user")
-        .update(User)
-        .set({name: req.body.name, password: hashedPassword})
-        .where({ id: req.session.passport.user })
-        .execute();
+          .update(User)
+          .set({ name: req.body.name, password: hashedPassword })
+          .where({ id: req.session.passport.user })
+          .execute();
       } else if (req.body.name) {
         await createQueryBuilder("user")
-        .update(User)
-        .set({name: req.body.name})
-        .where({ id: req.session.passport.user })
-        .execute();
+          .update(User)
+          .set({ name: req.body.name })
+          .where({ id: req.session.passport.user })
+          .execute();
       } else if (req.body.password) {
         const hashedPassword = await bcrypt.hash(req.body.password, 12);
         await createQueryBuilder("user")
-        .update(User)
-        .set({password: hashedPassword })
-        .where({ id: req.session.passport.user })
-        .execute();
-      } else return res.status(400).send({ data: null, message: "no edit info provied"});
-      
-      return res.status(200).send({ data: null, message: "edit success"});
+          .update(User)
+          .set({ password: hashedPassword })
+          .where({ id: req.session.passport.user })
+          .execute();
+      } else return res.status(400).send({ data: null, message: "no edit info provied" });
+
+      return res.status(200).send({ data: null, message: "edit success" });
     }
   } catch (e) {
     console.error(e);
@@ -191,12 +191,12 @@ router.patch('', async (req, res, next) => {
 /**
  * icon 업로드 엔드포인트와 icon 가져오는 용 내부 API
  */
-const upload = multer({dest: 'uploads/', limits: {fileSize: 5*1024*1024}});
+const upload = multer({ dest: 'uploads/', limits: { fileSize: 5 * 1024 * 1024 } });
 router.post('/icon', upload.single('img'), async (req, res, next) => {
   const user = (await createQueryBuilder("user")
     .where("id = :id", { id: req.session.passport.user })
     .execute())[0];
-  let oldIcon : string;
+  let oldIcon: string;
   if (user.User_profileIconURL) {
     oldIcon = user.User_profileIconURL.split('/icon/')[1];
   }
@@ -205,17 +205,17 @@ router.post('/icon', upload.single('img'), async (req, res, next) => {
   } catch (err) {
     console.error(err);
   }
-  let profileIconURL : string = process.env.SERVER_URL + '/user/icon/' + req.file.filename;
+  let profileIconURL: string = process.env.SERVER_URL + '/user/icon/' + req.file.filename;
   await createQueryBuilder("user")
-  .update(User)
-  .set({ profileIconURL })
-  .where({ id: req.session.passport.user })
-  .execute();
+    .update(User)
+    .set({ profileIconURL })
+    .where({ id: req.session.passport.user })
+    .execute();
 
-  return res.send({ data: {profileIconURL}, message: "set profile icon done" })  
+  return res.send({ data: { profileIconURL }, message: "set profile icon done" })
 });
 
-router.get('/icon/:id', (req, res)=>{res.sendFile(req.params.id, {root: 'uploads/'})});
+router.get('/icon/:id', (req, res) => { res.sendFile(req.params.id, { root: 'uploads/' }) });
 
 /**
  * 로그인(로컬)
@@ -236,7 +236,7 @@ router.post('/signin', async (req, res, next) => {
           console.error(loginErr);
           return next(loginErr);
         }
-        return res.send({data: {id: user.User_id, email: user.User_email}, message: "login success"});
+        return res.send({ data: { id: user.User_id, email: user.User_email }, message: "login success" });
       } catch (e) {
         return next(e);
       }
@@ -248,10 +248,10 @@ router.post('/signout', async (req, res, next) => {
   req.logout();
   if (req.session) {
     req.session.destroy((err) => {
-      res.send({data: null, message: 'logout success'});
+      res.send({ data: null, message: 'logout success' });
     });
   } else {
-    res.send({data: null, message: 'logout success'});
+    res.send({ data: null, message: 'logout success' });
   }
 });
 

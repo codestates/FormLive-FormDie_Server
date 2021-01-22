@@ -69,7 +69,7 @@ router.get('', async (req, res, next) => {
         views: group.views,
         isDefaultGroup: group.isDefaultGroup,
         updatedAt: group.updatedAt,
-        forms
+        forms: Array.from(new Set(forms))
       })
     }
 
@@ -138,21 +138,49 @@ router.get('/:id', async (req, res, next) => {
         message: 'group not exist'
       })
     } else {
-      const group = await getRepository(Group)
-      .createQueryBuilder('group')
-      .leftJoinAndSelect('group.relations', 'relations')
-      .where('groupId = :groupId', { groupId: req.query.id })
-      .getOne();
-      
-      return res.send(group)
+      const isExisting = await getRepository(Relation)
+        .findOne({
+          where: {
+            groupId: req.params.id,
+            userId: req.session.passport.user
+          }
+        });
+      if (isExisting) {
+        return res.send({ data: null, message: 'all success' });        
+      } else {
+        const formIds = await getRepository(Relation)
+          .createQueryBuilder('relation')
+          .select(['relation.formId'])
+          .where('groupId = :groupId', { groupId: req.params.id })
+          .andWhere('userId = :userId', { userId: 0 })
+          .getMany();
+
+        let relationArr = [];
+        for (let { formId } of formIds) {
+          relationArr.push({
+            userId: req.session.passport.user,
+            formId,
+            groupId: req.params.id
+          })
+        }
+
+        await createQueryBuilder("relation")
+          .insert()
+          .into(Relation)
+          .values(relationArr)
+          .execute();
+
+        return res.send({ data: null, message: 'all success' });
+      }
     }  
-  } catch (err) {
-    console.error(err);
-    return res.status(400).send({
-      data: null,
-      message: err.message
-    })
-  }
+  } catch (error) {
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
   
 });
 
@@ -192,7 +220,6 @@ router.post('', async (req, res, next) => {
     } else {
       res.status(400).send({ data: null, message: error.message })
     }
-
   };
 });
 
@@ -217,11 +244,13 @@ router.patch('', async (req, res, next) => {
     res.send({ data: null, message: "formGroup edit success" })
 
   } catch (error) {
-    //에러 처리
-    console.log(error);
-    return next(error);
-  }
-
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
 });
 
 router.delete('', async (req, res, next) => {
@@ -246,10 +275,14 @@ router.delete('', async (req, res, next) => {
     } else {
       res.status(400).send({ data: null, message: "not deleted. maybe not exist any more?" });
     }
-  } catch (err) {
-    console.error(err);
-    res.status(401).send({ data: null, message: "not authorized" });
-  }
+  } catch (error) {
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
 });
 
 export default router;

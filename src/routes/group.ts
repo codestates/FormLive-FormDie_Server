@@ -4,7 +4,7 @@ import * as passport from 'passport';
 import * as multer from 'multer';
 import * as fs from 'fs';
 
-import { Connection, createConnection, createQueryBuilder, getRepository, QueryBuilder } from "typeorm"; //login테스트 위한 임시 커넥션 생성. 나중에 index.ts에서 받아오는 방식으로 변경하기
+import { Brackets, Connection, createConnection, createQueryBuilder, getRepository, QueryBuilder } from "typeorm"; //login테스트 위한 임시 커넥션 생성. 나중에 index.ts에서 받아오는 방식으로 변경하기
 import { Entity, EntityRepository, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, ManyToMany, JoinTable, Repository } from "typeorm";
 
 import { Form } from "../entity/Form";
@@ -13,7 +13,6 @@ import { Relation } from '../entity/Relation';
 import { Suggestion } from '../entity/Suggestion';
 import { User } from "../entity/User";
 import { Userform } from '../entity/Userform';
-import { totalmem } from 'os';
 
 const router = express.Router();
 
@@ -37,9 +36,11 @@ router.get('', async (req, res, next) => {
     const rawGroups = await getRepository(Group)
       .createQueryBuilder('group')
       .leftJoinAndSelect('group.relations', 'relations')
-      .where("userId = :userId", { userId: req.session.passport.user })
-      .orWhere("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 })
-      .andWhere("title like :title", { title: `%${q}%` })      
+      .where("title like :title", { title: `%${q}%` })
+      .andWhere(new Brackets(qb => {
+        qb.where("userId = :userId", { userId: req.session.passport.user })
+          .orWhere("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 });
+      }))  
       .skip(offset)
       .take(offset + pageLimit) //.limit(X)
       .orderBy(`${sort}`, "DESC")
@@ -48,9 +49,11 @@ router.get('', async (req, res, next) => {
     const groupsCount = await getRepository(Group)
       .createQueryBuilder('group')
       .leftJoinAndSelect('group.relations', 'relations')
-      .where("userId = :userId", { userId: req.session.passport.user })
-      .orWhere("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 })
-      .andWhere("title like :title", { title: `%${q}%` })
+      .where("title like :title", { title: `%${q}%` })
+      .andWhere(new Brackets(qb => {
+        qb.where("userId = :userId", { userId: req.session.passport.user })
+          .orWhere("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 });
+      }))  
       .getCount();
     
     let content = [];
@@ -123,6 +126,33 @@ router.get('', async (req, res, next) => {
 });
 
 router.get('/:id', async (req, res, next) => {
+  try {
+    const viewcounter = await createQueryBuilder()
+      .update(Group)
+      .set({ views: () => "views + 1", updatedAt: () => "updated_at" })
+      .where("id = :id", { id: req.params.id })
+      .execute();
+    if (!viewcounter.affected) {
+      return res.status(400).send({
+        data: null,
+        message: 'group not exist'
+      })
+    } else {
+      const group = await getRepository(Group)
+      .createQueryBuilder('group')
+      .leftJoinAndSelect('group.relations', 'relations')
+      .where('groupId = :groupId', { groupId: req.query.id })
+      .getOne();
+      
+      return res.send(group)
+    }  
+  } catch (err) {
+    console.error(err);
+    return res.status(400).send({
+      data: null,
+      message: err.message
+    })
+  }
   
 });
 

@@ -51,11 +51,14 @@ router.get('/', async (req, res, next) => {
         }
       );
     }
-  } catch (e) {
-    console.error(e);
-    // 에러 처리를 여기서
-    return next(e);
-  }
+  } catch (error) {
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
 
 });
 
@@ -98,11 +101,14 @@ router.post('/', async (req, res, next) => {
         message: `signup success`
       }
     );
-  } catch (e) {
-    console.error(e);
-    // 에러 처리를 여기서
-    return next(e);
-  }
+  } catch (error) {
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
 });
 
 /**
@@ -142,11 +148,14 @@ router.delete('/', async (req, res, next) => {
         })
       }
     }
-  } catch (e) {
-    console.error(e);
-    // 에러 처리를 여기서
-    return next(e);
-  }
+  } catch (error) {
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
 
 });
 
@@ -180,11 +189,14 @@ router.patch('', async (req, res, next) => {
 
       return res.status(200).send({ data: null, message: "edit success" });
     }
-  } catch (e) {
-    console.error(e);
-    // 에러 처리를 여기서
-    return next(e);
-  }
+  } catch (error) {
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
 
 });
 
@@ -193,26 +205,38 @@ router.patch('', async (req, res, next) => {
  */
 const upload = multer({ dest: 'uploads/', limits: { fileSize: 5 * 1024 * 1024 } });
 router.post('/icon', upload.single('img'), async (req, res, next) => {
-  const user = (await createQueryBuilder("user")
-    .where("id = :id", { id: req.session.passport.user })
-    .execute())[0];
-  let oldIcon: string;
-  if (user.User_profileIconURL) {
-    oldIcon = user.User_profileIconURL.split('/icon/')[1];
-  }
-  try {
-    fs.unlinkSync('./uploads/' + oldIcon);
-  } catch (err) {
-    console.error(err);
-  }
-  let profileIconURL: string = process.env.SERVER_URL + '/user/icon/' + req.file.filename;
-  await createQueryBuilder("user")
-    .update(User)
-    .set({ profileIconURL })
-    .where({ id: req.session.passport.user })
-    .execute();
 
-  return res.send({ data: { profileIconURL }, message: "set profile icon done" })
+  try {
+    const user = (await createQueryBuilder("user")
+      .where("id = :id", { id: req.session.passport.user })
+      .execute())[0];
+    let oldIcon: string;
+    if (user.User_profileIconURL) {
+      oldIcon = user.User_profileIconURL.split('/icon/')[1];
+    }
+    try {
+      fs.unlinkSync('./uploads/' + oldIcon);
+    } catch (err) {
+      console.error(err);
+    }
+    let profileIconURL: string = process.env.SERVER_URL + '/user/icon/' + req.file.filename;
+    await createQueryBuilder("user")
+      .update(User)
+      .set({ profileIconURL })
+      .where({ id: req.session.passport.user })
+      .execute();
+
+    return res.send({ data: { profileIconURL }, message: "set profile icon done" });
+    
+  } catch (error) {
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
+
 });
 
 router.get('/icon/:id', (req, res) => { res.sendFile(req.params.id, { root: 'uploads/' }) });

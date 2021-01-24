@@ -72,6 +72,7 @@ router.get('/', async (req, res, next) => {
         formId: el.Form_id,
         title: el.Form_title,
         description: el.Form_description,
+        organization: el.Form_organization,
         views: el.Form_views,
         updated_at: el.Form_updated_at
       });
@@ -87,11 +88,14 @@ router.get('/', async (req, res, next) => {
       }
     );
 
-  } catch (e) {
-    console.error(e);
-    // 에러 처리를 여기서
-    return next(e);
-  }
+  } catch (error) {
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
 
 });
 
@@ -125,6 +129,7 @@ router.get('/:id', async (req, res, next) => {
           formId: form.Form_id,
           title: form.Form_title,
           description: form.Form_description,
+          organization: form.Form_organization,
           views: form.Form_views,
           isComplete: userform.Userform_isComplete,
           updated_at: form.Form_updated_at,
@@ -134,9 +139,13 @@ router.get('/:id', async (req, res, next) => {
       })
     }
   } catch (error) {
-    console.error(error);
-    return res.status(401).send({ data: null, message: "not authorized" });
-  }
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
 
 });
 
@@ -179,8 +188,12 @@ router.patch('', async (req, res, next) => {
       .execute();
     res.send({ data: null, message: "userform edit success" })
   } catch (error) {
-    console.error(error);
-    res.status(401).send({ data: null, message: "not authorized" });
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
   };
 
 });
@@ -199,9 +212,14 @@ router.delete('', async (req, res, next) => {
     } else {
       res.status(400).send({ data: null, message: "not deleted. maybe not exist any more?" });
     }
-  } catch (err) {
-    res.status(401).send({ data: null, message: "not authorized" });
-  }
+  } catch (error) {
+    console.error(error.message);
+    if (error.message === "Cannot read property 'user' of undefined") {
+      res.status(401).send({ data: null, message: "not authorized" });
+    } else {
+      res.status(400).send({ data: null, message: error.message })
+    }
+  };
 
 });
 

@@ -14,6 +14,9 @@ export class Form {
   @Column({ nullable: true })
   description: string;
 
+  @Column({ nullable: true })
+  organization: string;
+
   @Column({ default: 0 })
   views: number;
 

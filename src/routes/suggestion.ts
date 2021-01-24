@@ -76,9 +76,46 @@ router.get('', async (req, res, next) => {
       res.status(400).send({ data: null, message: error.message })
     }
   };
+
 });
 
-router.post('', async (req, res, next) => {
+/**
+ * suggestion 파일 업로드
+ * req: req.session.passport.user, fileURL
+ * multer를 통해 데이터를 받아서 server에 저장. 경로는 /uploads
+ * res: data, message: "suggestion upload done"
+ */
+let upload = multer({ dest: 'uploads/', limits: { fileSize: 5 * 1024 * 1024 } });
+router.post('', upload.single('doc'), async (req, res, next) => {
+  /*
+  const suggestion1 = (await createQueryBuilder("suggestion")
+    .where("id = :id", { id: req.session.passport.user })
+    .execute())[0];
+  let suggestionFile: string;
+  if (suggestion1.Suggestion_fileURL) {
+    suggestionFile = suggestion1.Suggestion_fileURL.split('/')[1];
+  }
+  //suggestionFile = suggestion1.Suggestion_fileURL.split('')[1];
+  */
+
+  try {
+    fs.unlinkSync('./uploads/'); //suggestionFile
+  } catch (err) {
+    console.error(err);
+  }
+  let fileURL: string = process.env.SERVER_URL + '/suggestion' + req.file.filename;
+
+  await createQueryBuilder("suggestion")
+    .insert()
+    .into(Suggestion)
+    .values([{
+      fileURL: fileURL,
+      userId: req.session.passport.user,
+      title: req.body.title
+    }])
+    .execute();
+
+  return res.send({ data: { title: req.body.title }, message: "suggestion upload done" })
 
 });
 

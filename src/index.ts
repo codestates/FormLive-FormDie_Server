@@ -36,10 +36,11 @@ if (prod) {
     }));
 }
 else {
-    app.use(morgan('dev'));
     app.use(cors({
         origin: true,
         credentials: true,
+        methods: "GET, POST, PATCH, DELETE, PUT",
+        allowedHeaders: "Content-Type, Authorization",
     }));
 }
 app.use(express.json());

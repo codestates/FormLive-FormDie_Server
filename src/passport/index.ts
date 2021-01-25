@@ -1,6 +1,7 @@
 import * as passport from 'passport';
 import { createQueryBuilder } from "typeorm";
 import local from './local';
+import google from './google';
 import naver from './naverOAuth';
 
 export default () => {
@@ -23,5 +24,6 @@ export default () => {
   });
 
   local();
+  google();
   naver();
 }

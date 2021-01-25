@@ -1,26 +1,29 @@
 import * as passport from 'passport';
-import { Strategy } from 'passport-google-oauth20'
+import { Strategy } from 'passport-kakao';
 import { getRepository, Connection, createConnection, createQueryBuilder, QueryBuilder } from "typeorm";
 import { User } from "../entity/User";
 
 export default () => {
-  passport.use('google',
+  passport.use('kakao',
     new Strategy(
       {
-        clientID: process.env.GOOGLE_CLIENTID,
-        clientSecret: process.env.GOOGLE_SECRETID,
-        callbackURL: `${process.env.SERVER_URL}/auth/google/callback`
+        clientID: process.env.KAKAO_CLIENTID,
+        clientSecret: '',
+        callbackURL: `${process.env.SERVER_URL}/auth/kakao/callback`
       },
       async function (accessToken, refreshToken, profile, cb) {
+        console.log(profile);
         const {
-          _json: { picture, name, email }
+          _json: { id, properties: {
+            nickname, thumbnail_image
+          } }
         } = profile;
         try {
           const users = (await createQueryBuilder("user")
-            .where("email = :email", { email })
+            .where("email = :email", { email: "Kakao " + id })
             .execute());
           for (let user of users) {
-            if (user && user.User_password === null && user.User_email.split('@')[1] === 'gmail.com') {
+            if (user && user.User_password === null && user.User_email.split(' ')[0] === 'Kakao') {
               return cb(null, user)
             }
           }
@@ -28,9 +31,9 @@ export default () => {
             .insert()
             .into(User)
             .values([{
-              email,
-              name,
-              profileIconURL: picture
+              email: "Kakao " + id,
+              name: nickname,
+              profileIconURL: thumbnail_image
             }])
             .execute()).identifiers[0];
 

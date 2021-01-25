@@ -34,29 +34,7 @@ router.get('/kakao/callback', async (req, res, next) => {
 
 });
 
-router.get('/naver', passport.authenticate('naver', { successRedirect: '/', failureRedirect: '/user/signin' })
-  /*
-  passport.authenticate('local', (err, user, info) => {
-    if (err) {
-      console.error(err);
-      return next(err);
-    }
-    if (info) {
-      return res.status(401).send(info);
-    }
-    return req.login(user, async (loginErr) => {
-      try {
-        if (loginErr) {
-          console.error(loginErr);
-          return next(loginErr);
-        }
-        return res.send({ data: { id: user.User_id, email: user.User_email }, message: "login success" });
-      } catch (e) {
-        return next(e);
-      }
-    });
-  })(req, res, next);
-  */
+router.get('/naver', passport.authenticate('naver', { successRedirect: '/callback', failureRedirect: '/' })
 
 );
 
@@ -64,14 +42,15 @@ router.get('/naver/callback', async (req, res, next) => {
   try {
     passport.authenticate('naver', function (err, user) {
       console.log('passport.authenticate(naver)실행');
-      //if (!user) { return res.redirect('http://localhost:5000/naver'); }
+
       req.logIn(user, async function (err) {
         if (err) {
           console.error(err);
           return next(err);
         }
         console.log('naver/callback user : ', user);
-        return res.redirect('https://yangsikdang.ml:5000/');
+        //return res.redirect('https://yangsikdang.ml:5000/');
+        return res.redirect('http://localhost:5000');
       });
     })(req, res);
 

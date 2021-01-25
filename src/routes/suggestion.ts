@@ -34,7 +34,7 @@ router.get('', async (req, res, next) => {
     }
     const rawSuggestions = await getRepository(Suggestion)
       .createQueryBuilder("suggestion")
-      .where("title like :title", { title: `%${q}%` }) 
+      .where("title like :title", { title: `%${q}%` })
       .leftJoinAndSelect('suggestion.user', 'user')
       .skip(offset)
       .take(offset + pageLimit) //.limit(X)
@@ -43,10 +43,10 @@ router.get('', async (req, res, next) => {
 
     const suggestionCount = await getRepository(Suggestion)
       .createQueryBuilder("suggestion")
-      .where("title like :title", { title: `%${q}%` }) 
+      .where("title like :title", { title: `%${q}%` })
       .leftJoinAndSelect('suggestion.user', 'user')
       .getCount();
-    
+
     let content = [];
     for (let suggestion of rawSuggestions) {
       content.push({
@@ -85,7 +85,16 @@ router.get('', async (req, res, next) => {
  * multer를 통해 데이터를 받아서 server에 저장. 경로는 /uploads
  * res: data, message: "suggestion upload done"
  */
-let upload = multer({ dest: 'uploads/', limits: { fileSize: 5 * 1024 * 1024 } });
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/');
+    },
+    filename: function (req, file, cb) {
+      cb(null, file.originalname);
+    }
+  }),
+});
 router.post('', upload.single('doc'), async (req, res, next) => {
   /*
   const suggestion1 = (await createQueryBuilder("suggestion")
@@ -98,12 +107,7 @@ router.post('', upload.single('doc'), async (req, res, next) => {
   //suggestionFile = suggestion1.Suggestion_fileURL.split('')[1];
   */
 
-  try {
-    fs.unlinkSync('./uploads/'); //suggestionFile
-  } catch (err) {
-    console.error(err);
-  }
-  let fileURL: string = process.env.SERVER_URL + '/suggestion' + req.file.filename;
+  let fileURL: string = process.env.SERVER_URL + '/suggestion/' + req.file.filename;
 
   await createQueryBuilder("suggestion")
     .insert()
@@ -118,5 +122,6 @@ router.post('', upload.single('doc'), async (req, res, next) => {
   return res.send({ data: { title: req.body.title }, message: "suggestion upload done" })
 
 });
+router.get('/:id', (req, res) => { res.sendFile(req.params.id, { root: 'uploads/' }) });
 
 export default router;

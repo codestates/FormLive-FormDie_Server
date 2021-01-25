@@ -1,6 +1,7 @@
 import * as passport from 'passport';
 import { createQueryBuilder } from "typeorm";
 import local from './local';
+import google from './google';
 
 export default () => {
   //로그인 할 때 한 번 실행
@@ -22,4 +23,5 @@ export default () => {
   });
 
   local();
+  google();
 }

@@ -1,4 +1,20 @@
 import * as express from 'express';
+import * as passport from 'passport';
+import * as env from 'dotenv';
+import * as bcrypt from 'bcrypt';
+import * as multer from 'multer';
+import * as fs from 'fs';
+import * as OAuth from "../passport/naverOAuth";
+
+import { Brackets, Connection, createConnection, createQueryBuilder, getRepository, QueryBuilder } from "typeorm"; //login테스트 위한 임시 커넥션 생성. 나중에 index.ts에서 받아오는 방식으로 변경하기
+import { Entity, EntityRepository, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, ManyToMany, JoinTable, Repository } from "typeorm";
+
+import { Form } from "../entity/Form";
+import { Group } from '../entity/Group';
+import { Relation } from '../entity/Relation';
+import { Suggestion } from '../entity/Suggestion';
+import { User } from "../entity/User";
+import { Userform } from '../entity/Userform';
 
 const router = express.Router();
 
@@ -18,11 +34,51 @@ router.get('/kakao/callback', async (req, res, next) => {
 
 });
 
-router.get('/naver', async (req, res, next) => {
+router.get('/naver', passport.authenticate('naver', { successRedirect: '/', failureRedirect: '/user/signin' })
+  /*
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {
+      console.error(err);
+      return next(err);
+    }
+    if (info) {
+      return res.status(401).send(info);
+    }
+    return req.login(user, async (loginErr) => {
+      try {
+        if (loginErr) {
+          console.error(loginErr);
+          return next(loginErr);
+        }
+        return res.send({ data: { id: user.User_id, email: user.User_email }, message: "login success" });
+      } catch (e) {
+        return next(e);
+      }
+    });
+  })(req, res, next);
+  */
 
-});
+);
 
 router.get('/naver/callback', async (req, res, next) => {
+  try {
+    passport.authenticate('naver', function (err, user) {
+      console.log('passport.authenticate(naver)실행');
+      //if (!user) { return res.redirect('http://localhost:5000/naver'); }
+      req.logIn(user, async function (err) {
+        if (err) {
+          console.error(err);
+          return next(err);
+        }
+        console.log('naver/callback user : ', user);
+        return res.redirect('https://yangsikdang.ml:5000/');
+      });
+    })(req, res);
+
+  }
+  catch (e) {
+    return next(e);
+  }
 
 });
 

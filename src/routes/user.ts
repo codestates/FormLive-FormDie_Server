@@ -140,7 +140,7 @@ router.delete('/', async (req, res, next) => {
           .execute();
         console.log(`탈퇴한 회원입니다: ${req.session.passport.user}`);
         req.logout(); //탈퇴했으면 로그아웃시키고, 세션도 끊어줘야됨. 
-        return res.status(302).send({ data: null, message: "quit process success" });
+        return res.status(200).send({ data: null, message: "quit process success" });
       } else {
         return res.status(400).send({
           data: null,
@@ -227,7 +227,7 @@ router.post('/icon', upload.single('img'), async (req, res, next) => {
       .execute();
 
     return res.send({ data: { profileIconURL }, message: "set profile icon done" });
-    
+
   } catch (error) {
     console.error(error.message);
     if (error.message === "Cannot read property 'user' of undefined") {

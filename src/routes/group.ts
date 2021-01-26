@@ -32,11 +32,12 @@ router.get('', async (req, res, next) => {
     q = String(req.query.q);
   }
 
-  try {
+  //try {
     const rawGroups = await getRepository(Group)
       .createQueryBuilder('group')
       .leftJoinAndSelect('group.relations', 'relations')
-      .where("title like :title", { title: `%${q}%` })
+      .leftJoinAndSelect('relations.form', 'form')
+      .where("group.title like :title", { title: `%${q}%` })
       .andWhere(new Brackets(qb => {
         qb.where("userId = :userId", { userId: req.session.passport.user })
           .orWhere("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 });
@@ -60,7 +61,10 @@ router.get('', async (req, res, next) => {
     for (let group of rawGroups) {
       let forms = [];
       for (let el of group.relations) {
-        forms.push(el.formId);
+        forms.push({
+          id: el.formId,
+          title: el.form.title
+        });
       }
       content.push({
         groupId: group.id,
@@ -81,49 +85,49 @@ router.get('', async (req, res, next) => {
       },
       message: "get group list success"
     });
-  } catch (err) {
-    console.log('not logged in');
-    const rawGroups = await getRepository(Group)
-      .createQueryBuilder('group')
-      .leftJoinAndSelect('group.relations', 'relations')
-      .where("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 })
-      .skip(offset)
-      .take(offset + pageLimit) //.limit(X)
-      .orderBy(`${sort}`, "DESC")
-      .getMany();
+  // } catch (err) {
+  //   console.log('not logged in');
+  //   const rawGroups = await getRepository(Group)
+  //     .createQueryBuilder('group')
+  //     .leftJoinAndSelect('group.relations', 'relations')
+  //     .where("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 })
+  //     .skip(offset)
+  //     .take(offset + pageLimit) //.limit(X)
+  //     .orderBy(`${sort}`, "DESC")
+  //     .getMany();
 
-    const groupsCount = await getRepository(Group)
-      .createQueryBuilder('group')
-      .leftJoinAndSelect('group.relations', 'relations')
-      .where("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 })
-      .getCount();
+  //   const groupsCount = await getRepository(Group)
+  //     .createQueryBuilder('group')
+  //     .leftJoinAndSelect('group.relations', 'relations')
+  //     .where("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 })
+  //     .getCount();
 
-    let content = [];
-    for (let group of rawGroups) {
-      let forms = [];
-      for (let el of group.relations) {
-        forms.push(el.formId);
-      }
-      content.push({
-        groupId: group.id,
-        title: group.title,
-        description: group.description,
-        organization: group.organization,
-        views: group.views,
-        isDefaultGroup: group.isDefaultGroup,
-        updatedAt: group.updatedAt,
-        forms
-      })
-    }
+  //   let content = [];
+  //   for (let group of rawGroups) {
+  //     let forms = [];
+  //     for (let el of group.relations) {
+  //       forms.push(el.formId);
+  //     }
+  //     content.push({
+  //       groupId: group.id,
+  //       title: group.title,
+  //       description: group.description,
+  //       organization: group.organization,
+  //       views: group.views,
+  //       isDefaultGroup: group.isDefaultGroup,
+  //       updatedAt: group.updatedAt,
+  //       forms
+  //     })
+  //   }
 
-    res.send({
-      data: {
-        total: groupsCount,
-        content
-      },
-      message: "get default group list success"
-    });;
-  }
+  //   res.send({
+  //     data: {
+  //       total: groupsCount,
+  //       content
+  //     },
+  //     message: "get default group list success"
+  //   });;
+  // }
 
 });
 

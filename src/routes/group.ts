@@ -61,11 +61,13 @@ router.get('', async (req, res, next) => {
     for (let group of rawGroups) {
       let forms = [];
       for (let el of group.relations) {
-        forms.push({
+        forms.push(JSON.stringify({
           id: el.formId,
           title: el.form.title
-        });
+        }));
       }
+      forms = Array.from(new Set(forms));
+      forms = forms.map(form => JSON.parse(form));
       content.push({
         groupId: group.id,
         title: group.title,
@@ -74,7 +76,7 @@ router.get('', async (req, res, next) => {
         views: group.views,
         isDefaultGroup: group.isDefaultGroup,
         updatedAt: group.updatedAt,
-        forms: Array.from(new Set(forms))
+        forms: forms
       })
     }
 
@@ -107,11 +109,13 @@ router.get('', async (req, res, next) => {
     for (let group of rawGroups) {
       let forms = [];
       for (let el of group.relations) {
-        forms.push({
+        forms.push(JSON.stringify({
           id: el.formId,
           title: el.form.title
-        });
+        }));
       }
+      forms = Array.from(new Set(forms));
+      forms = forms.map(form => JSON.parse(form));
       content.push({
         groupId: group.id,
         title: group.title,

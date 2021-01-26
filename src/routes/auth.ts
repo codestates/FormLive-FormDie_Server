@@ -18,37 +18,36 @@ import { Userform } from '../entity/Userform';
 
 const router = express.Router();
 
-router.get('/google', passport.authenticate('google', { scope: ['profile','email'] }));
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: 'http://localhost:3000' }),
-function(req, res) {
-  // Successful authentication, redirect home.
-  res.redirect('http://localhost:3000/home');
-});
+  function (req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('http://localhost:3000/home');
+  });
 
 router.get('/kakao', passport.authenticate('kakao'));
 router.get('/kakao/callback', passport.authenticate('kakao', { failureRedirect: 'http://localhost:3000' }),
-function(req, res) {
-  // Successful authentication, redirect home.
-  res.redirect('http://localhost:3000/home');
-});
+  function (req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('http://localhost:3000/home');
+  });
 
-router.get('/naver', passport.authenticate('naver', { successRedirect: '/callback', failureRedirect: '/' })
+router.get('/naver', passport.authenticate('naver', { successRedirect: '/callback', failureRedirect: 'http://localhost:3000' })
 
 );
 
 router.get('/naver/callback', async (req, res, next) => {
   try {
     passport.authenticate('naver', function (err, user) {
-      console.log('passport.authenticate(naver)실행');
 
       req.logIn(user, async function (err) {
         if (err) {
           console.error(err);
           return next(err);
         }
-        console.log('naver/callback user : ', user);
+        //console.log('naver/callback user : ', user);
         //return res.redirect('https://yangsikdang.ml:5000/');
-        return res.redirect('http://localhost:5000');
+        return res.redirect('http://localhost:3000');
       });
     })(req, res);
 

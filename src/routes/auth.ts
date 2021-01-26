@@ -19,19 +19,17 @@ import { Userform } from '../entity/Userform';
 const router = express.Router();
 
 router.get('/google', passport.authenticate('google', { scope: ['profile','email'] }));
-
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: 'http://localhost:3000' }),
 function(req, res) {
   // Successful authentication, redirect home.
   res.redirect('http://localhost:3000/home');
 });
 
-router.get('/kakao', async (req, res, next) => {
-
-});
-
-router.get('/kakao/callback', async (req, res, next) => {
-
+router.get('/kakao', passport.authenticate('kakao'));
+router.get('/kakao/callback', passport.authenticate('kakao', { failureRedirect: 'http://localhost:3000' }),
+function(req, res) {
+  // Successful authentication, redirect home.
+  res.redirect('http://localhost:3000/home');
 });
 
 router.get('/naver', passport.authenticate('naver', { successRedirect: '/callback', failureRedirect: '/' })

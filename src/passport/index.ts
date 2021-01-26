@@ -3,6 +3,7 @@ import { createQueryBuilder } from "typeorm";
 import local from './local';
 import google from './google';
 import naver from './naverOAuth';
+import kakao from './kakao';
 
 export default () => {
   //로그인 할 때 한 번 실행
@@ -26,4 +27,5 @@ export default () => {
   local();
   google();
   naver();
+  kakao();
 }

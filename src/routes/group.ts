@@ -43,7 +43,7 @@ router.get('', async (req, res, next) => {
           .orWhere("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 });
       }))  
       .skip(offset)
-      .take(offset + pageLimit) //.limit(X)
+      .take(pageLimit) //.limit(X)
       .orderBy(`${sort}`, "DESC")
       .getMany();
 
@@ -95,7 +95,7 @@ router.get('', async (req, res, next) => {
       .leftJoinAndSelect('relations.form', 'form')
       .where("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 })
       .skip(offset)
-      .take(offset + pageLimit) //.limit(X)
+      .take(pageLimit) //.limit(X)
       .orderBy(`${sort}`, "DESC")
       .getMany();
 

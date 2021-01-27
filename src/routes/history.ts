@@ -40,7 +40,7 @@ router.get('', async (req, res, next) => {
       .where("userId = :userId", { userId: req.session.passport.user })
       .andWhere("group.title like :title", { title: `%${q}%` })      
       .skip(offset)
-      .take(offset + pageLimit) //.limit(X)
+      .take(pageLimit) //.limit(X)
       .orderBy(`Group_updated_at`, sort)
       .getMany();
 

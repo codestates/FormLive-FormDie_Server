@@ -36,8 +36,9 @@ router.get('', async (req, res, next) => {
     const rawGroups = await getRepository(Group)
       .createQueryBuilder('group')
       .leftJoinAndSelect('group.relations', 'relations')
+      .leftJoinAndSelect('relations.form', 'form')
       .where("userId = :userId", { userId: req.session.passport.user })
-      .andWhere("title like :title", { title: `%${q}%` })      
+      .andWhere("group.title like :title", { title: `%${q}%` })      
       .skip(offset)
       .take(offset + pageLimit) //.limit(X)
       .orderBy(`Group_updated_at`, sort)
@@ -54,7 +55,10 @@ router.get('', async (req, res, next) => {
     for (let group of rawGroups) {
       let forms = [];
       for (let el of group.relations) {
-        forms.push(el.formId);
+        forms.push({
+          id: el.formId,
+          title: el.form.title
+        });
       }
       content.push({
         groupId: group.id,

@@ -48,14 +48,14 @@ router.get('/', async (req, res, next) => {
         //{ title: `%${q}%` } like문 추가 필요.
         .where("title like :title", { title: `%${q}%` })
         .skip(offset)
-        .take(offset + pageLimit) //.limit(X)
+        .take(pageLimit) //.limit(X)
         .orderBy(`${sort}`, "DESC")
         .execute();
     } else { //없으면
       getForm = await createQueryBuilder("form")
         //.where("title = :title", { title: `%${q}%` })
         .skip(offset)
-        .take(offset + pageLimit) //.limit(X)
+        .take(pageLimit) //.limit(X)
         .orderBy(`${sort}`, "DESC")
         .execute();
     }

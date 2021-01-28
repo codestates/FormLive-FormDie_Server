@@ -37,9 +37,10 @@ router.get('', async (req, res, next) => {
       .createQueryBuilder('group')
       .leftJoinAndSelect('group.relations', 'relations')
       .leftJoinAndSelect('relations.form', 'form')
+      .leftJoinAndSelect('form.userforms', 'userforms', 'userforms.userId = :userId')
       .where("group.title like :title", { title: `%${q}%` })
       .andWhere(new Brackets(qb => {
-        qb.where("userId = :userId", { userId: req.session.passport.user })
+        qb.where("relations.userId = :userId", { userId: req.session.passport.user })
           .orWhere("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 });
       }))  
       .skip(offset)
@@ -63,7 +64,9 @@ router.get('', async (req, res, next) => {
       for (let el of group.relations) {
         forms.push(JSON.stringify({
           id: el.formId,
-          title: el.form.title
+          title: el.form.title,
+          isComplete: el.form.userforms.length !== 0 ? el.form.userforms[0].isComplete : null,
+          contents: el.form.userforms.length !== 0 ? JSON.parse(el.form.userforms[0].contents) : null
         }));
       }
       forms = Array.from(new Set(forms));

@@ -131,7 +131,7 @@ router.get('/:id', async (req, res, next) => {
           description: form.Form_description,
           organization: form.Form_organization,
           views: form.Form_views,
-          isComplete: userform.Userform_isComplete,
+          isComplete: userform.Userform_isComplete ? true : false,
           updated_at: form.Form_updated_at,
           contents: JSON.parse(userform.Userform_contents)
         },

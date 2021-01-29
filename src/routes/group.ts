@@ -37,11 +37,10 @@ router.get('', async (req, res, next) => {
       .createQueryBuilder('group')
       .leftJoinAndSelect('group.relations', 'relations')
       .leftJoinAndSelect('relations.form', 'form')
-      .leftJoinAndSelect('form.userforms', 'userforms', 'userforms.userId = :userId')
+      .leftJoinAndSelect('form.userforms', 'userforms', 'userforms.userId = :userId', { userId: req.session.passport.user })
       .where("group.title like :title", { title: `%${q}%` })
       .andWhere(new Brackets(qb => {
-        qb.where("relations.userId = :userId", { userId: req.session.passport.user })
-          .orWhere("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 });
+        qb.where("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 });
       }))  
       .skip(offset)
       .take(pageLimit) //.limit(X)
@@ -53,8 +52,7 @@ router.get('', async (req, res, next) => {
       .leftJoinAndSelect('group.relations', 'relations')
       .where("title like :title", { title: `%${q}%` })
       .andWhere(new Brackets(qb => {
-        qb.where("userId = :userId", { userId: req.session.passport.user })
-          .orWhere("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 });
+        qb.where("isDefaultGroup = :isDefaultGroup", { isDefaultGroup: 1 });
       }))  
       .getCount();
 

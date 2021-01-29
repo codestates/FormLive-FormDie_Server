@@ -215,12 +215,13 @@ router.post('', async (req, res, next) => {
 
     //userId, formId, groupId를 정리해서 ORM에 넣을 수 있는 형식으로 가공
     let relationArr = [];
+    
     for (let formId of req.body.forms) {
       relationArr.push({
         userId: req.session.passport.user,
         formId,
         groupId: group.identifiers[0].id
-      })
+      });
     }
 
     //Relation 테이블에 그 그룹의 소유 유저와 소속됨 폼들을 등록
@@ -229,7 +230,26 @@ router.post('', async (req, res, next) => {
       .into(Relation)
       .values(relationArr)
       .execute();
-    res.send({ data: { groupId: group.identifiers[0].id, title: req.body.title, forms: req.body.forms }, message: "new user group created" })
+
+    const groupForms = await getRepository(Group)
+      .createQueryBuilder('group')
+      .leftJoinAndSelect('group.relations', 'relations')
+      .leftJoinAndSelect('relations.form', 'form')
+      .leftJoinAndSelect('form.userforms', 'userforms', 'userforms.userId = :userId', { userId: req.session.passport.user })
+      .where("group.id = :id", { id: group.identifiers[0].id })
+      .getOne();
+
+    let forms = [];
+    for (let el of groupForms.relations) {
+      forms.push({
+        id: el.formId,
+        title: el.form.title,
+        isComplete: el.form.userforms.length !== 0 ? el.form.userforms[0].isComplete : null,
+        contents: el.form.userforms.length !== 0 ? JSON.parse(el.form.userforms[0].contents) : null
+      });
+    }
+    
+    res.send({ data: { groupId: group.identifiers[0].id, title: req.body.title, forms }, message: "new user group created" })
   } catch (error) {
     console.error(error.message);
     if (error.message === "Cannot read property 'user' of undefined") {

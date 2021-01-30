@@ -1,8 +1,0 @@
-import * as session from 'express-session';
-
-declare module 'express-session' {
-  export interface SessionData {
-    passport: { [key: string]: any };
-  }
-}
-

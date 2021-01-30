@@ -1,9 +1,0 @@
-.idea/
-.vscode/
-node_modules/
-tmp/
-temp/
-dist/
-.env
-ormconfig.js
-test1/

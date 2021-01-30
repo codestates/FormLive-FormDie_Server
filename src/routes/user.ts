@@ -1,13 +1,9 @@
 import * as express from 'express';
-import * as bcrypt from 'bcrypt'; //비밀번호 암호화모듈 사용 필요?
+import * as bcrypt from 'bcrypt';
 import * as passport from 'passport';
 import * as multer from 'multer';
 import * as fs from 'fs';
-import { Connection, createConnection, createQueryBuilder, QueryBuilder } from "typeorm"; //login테스트 위한 임시 커넥션 생성. 나중에 index.ts에서 받아오는 방식으로 변경하기
-import { Entity, EntityRepository, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, ManyToMany, JoinTable, Repository } from "typeorm";
-import { Relation } from '../entity/Relation';
-import { Suggestion } from '../entity/Suggestion';
-import { Userform } from '../entity/Userform';
+import { createQueryBuilder } from "typeorm";
 import { User } from "../entity/User";
 
 // @EntityRepository(User)

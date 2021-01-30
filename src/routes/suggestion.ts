@@ -1,18 +1,7 @@
 import * as express from 'express';
-import * as bcrypt from 'bcrypt';
-import * as passport from 'passport';
 import * as multer from 'multer';
-import * as fs from 'fs';
-
-import { Brackets, Connection, createConnection, createQueryBuilder, getRepository, QueryBuilder } from "typeorm"; //login테스트 위한 임시 커넥션 생성. 나중에 index.ts에서 받아오는 방식으로 변경하기
-import { Entity, EntityRepository, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, ManyToMany, JoinTable, Repository } from "typeorm";
-
-import { Form } from "../entity/Form";
-import { Group } from '../entity/Group';
-import { Relation } from '../entity/Relation';
+import { createQueryBuilder, getRepository } from "typeorm";
 import { Suggestion } from '../entity/Suggestion';
-import { User } from "../entity/User";
-import { Userform } from '../entity/Userform';
 
 const router = express.Router();
 

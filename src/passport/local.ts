@@ -1,7 +1,7 @@
 import * as passport from 'passport';
 import * as bcrypt from 'bcrypt';
 import { Strategy } from 'passport-local';
-import { Connection, createConnection, createQueryBuilder, QueryBuilder } from "typeorm";
+import { createQueryBuilder } from "typeorm";
 
 
 export default () => {

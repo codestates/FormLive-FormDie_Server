@@ -1,6 +1,6 @@
 import * as passport from 'passport';
 import { Strategy } from 'passport-kakao';
-import { getRepository, Connection, createConnection, createQueryBuilder, QueryBuilder } from "typeorm";
+import { createQueryBuilder } from "typeorm";
 import { User } from "../entity/User";
 
 export default () => {

@@ -268,6 +268,8 @@ router.post('/signout', async (req, res, next) => {
   req.logout();
   if (req.session) {
     req.session.destroy((err) => {
+      res.clearCookie('connect.sid');
+      req.session = null;
       res.send({ data: null, message: 'logout success' });
     });
   } else {

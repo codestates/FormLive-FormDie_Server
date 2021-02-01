@@ -40,10 +40,9 @@ app.use(expressSession({
     saveUninitialized: false,
     secret: process.env.COOKIE_SECRET,
     cookie: {
-        domain: 'yangsikdang.ml',
         path: '/',
         sameSite: 'none',
-        httpOnly: true,
+        httpOnly: false,
         secure: true
     },
 }));

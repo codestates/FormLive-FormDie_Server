@@ -26,23 +26,12 @@ passportConfig();
 dotenv.config();
 const app = express();
 const prod = process.env.NODE_ENV === 'production';
-if (prod) {
-    app.use(hpp());
-    app.use(helmet());
-    app.use(morgan('combined'));
-    app.use(cors({
-        origin: /yangsikdang\.ml$/,
-        credentials: true,
-    }));
-}
-else {
-    app.use(cors({
-        origin: true,
-        credentials: true,
-        methods: "GET, POST, PATCH, DELETE, PUT",
-        allowedHeaders: "Content-Type, Authorization",
-    }));
-}
+app.use(cors({
+    origin: 'https://yangsikdang.ml',
+    credentials: true,
+    methods: "GET, POST, PATCH, DELETE, PUT",
+    allowedHeaders: "Content-Type, Authorization",
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
@@ -52,7 +41,10 @@ app.use(expressSession({
     secret: process.env.COOKIE_SECRET,
     cookie: {
         domain: 'localhost',
-        path: '/'
+        path: '/',
+        sameSite: 'none',
+        httpOnly: true,
+        secure: true
     },
 }));
 app.use(passport.initialize());

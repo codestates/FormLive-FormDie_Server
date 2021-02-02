@@ -47,6 +47,7 @@ router.get('', async (req, res, next) => {
         forms.push({
           id: el.formId,
           title: el.form.title,
+          organization: el.form.organization,
           isComplete: el.form.userforms.length !== 0 ? el.form.userforms[0].isComplete : null,
           contents: el.form.userforms.length !== 0 ? JSON.parse(el.form.userforms[0].contents) : null
         });

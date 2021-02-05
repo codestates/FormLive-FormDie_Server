@@ -155,6 +155,12 @@ router.delete('/', async (req, res, next) => {
 
 });
 
+/**
+ * 회원정보 수정하기
+ * test1
+ * req: 작성해주세요.
+ * res: 작성해주세요.
+ */
 router.patch('', async (req, res, next) => {
   try {
     const user = await createQueryBuilder("user")

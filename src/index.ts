@@ -35,6 +35,18 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
+
+/*
+ * expressSession으로 session을 이용할 경우,
+ * 여기서 cookie 옵션을 제대로 설정 해주어야 세션 유저 인증을 제대로 진행 할 수 있다.
+ * (특히 크롬 최신 버전으로 갈수록 보안에 민감해져서 더 중요하다!)
+ * 우선, client와 server의 도메인이 다를 경우, sameSite: 'none' 설정이 필수인데,
+ * secure가 true가 되어야만 쿠키를 전달 할 수 있다.
+ * 그리고 secure를 true로 쓰려면 https가 필수이다!
+ * client와 서버의 도메인을 서로 다르게 해서 이용하려면, https 인증이 필수라 할 수 있다.
+ * 현재 아래 코드는 https로 deploy 된 것을 전제로 해놓은 설정인데,
+ * localhost에서 http로 테스트 할 경우, sameSite와 secure 옵션을 모두 없애고 구동하면 된다.
+ */
 app.use(expressSession({
     resave: false,
     saveUninitialized: false,

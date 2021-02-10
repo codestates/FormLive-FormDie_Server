@@ -19,6 +19,17 @@ import suggestionRouter from './routes/suggestion';
 import userRouter from './routes/user';
 
 import "reflect-metadata";
+// https://stackoverflow.com/questions/57762374/how-configure-typeorm-ormconfig-json-file-to-parse-entities-from-js-dist-folder
+/**
+ * URL 주소의 답변 참조.
+ * createConnection 내부에 connection env를 잡는 대신
+ * ormconfig.js로 분리하여 설정을 export 합니다.
+ * ormconfig 내용은 공식문서 getting started의 connection env와 비슷하지만 
+ * srcConfig의 migrations, subscribers는 미사용 상태.
+ * 여기에서의 migrations도 SequelizeORM처럼 데이터베이스 스키마를 업데이트하고 기존 데이터베이스에 
+ * 새로운 변경사항을 적용하기 위해 SQL 쿼리가 포함된 단일 파일입니다. - https://blog.shovelman.dev/965
+ * 그러므로 현재는 src, dist 모두 entities가 핵심사용 부분.
+*/
 import { createConnection } from "typeorm";
 createConnection();
 
@@ -28,8 +39,15 @@ const app = express();
 const prod = process.env.NODE_ENV === 'production';
 app.use(cors({
     origin: 'https://yangsikdang.ml',
+    //credentials(위임장) :true로 계속 위임장을 들고 있어야 CORS 제한에 걸리지 않습니다.
+    //특히 axios.withCredentials ~ https.createServer에 걸쳐 필수사항.
     credentials: true,
     methods: "GET, POST, PATCH, DELETE, PUT",
+    /**
+     * 만일 allowedHeaders를 지정하지 않으면 기본적으로 요청의 Access-Control-Request-Headers 헤더에 지정된 헤더를 반영합니다 .
+     * Authorization 요청 헤더는 서버의 사용자 에이전트임을 증명하는 자격을 포함하라는 뜻으로 필요.
+     * 401 Unauthorized 관련하여 MDN에 나온 예시 중 하나. / https://developer.mozilla.org/ko/docs/Web/HTTP/Headers/Authorization
+     */
     allowedHeaders: "Content-Type, Authorization",
 }));
 app.use(express.json());

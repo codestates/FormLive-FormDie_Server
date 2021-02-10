@@ -25,11 +25,9 @@ import "reflect-metadata";
  * createConnection 내부에 connection env를 잡는 대신
  * ormconfig.js로 분리하여 설정을 export 합니다.
  * ormconfig 내용은 공식문서 getting started의 connection env와 비슷하지만 
- * srcConfig의 migrations, subscribers는 현재 미사용 중.
- * 일반적으로 데이터베이스에서 데이터를 가져오면
- * 프로덕션에서 스키마를 동기화할 때 사용하는 synchronize: true 는 안전하지 않다고 합니다.
- * migrations 데이터베이스 스키마를 업데이트하고 기존 데이터베이스에 새로운 변경사항을 적용하기 위해
- * SQL 쿼리가 포함된 단일 파일입니다. - https://blog.shovelman.dev/965
+ * srcConfig의 migrations, subscribers는 미사용 상태.
+ * 여기에서의 migrations도 SequelizeORM처럼 데이터베이스 스키마를 업데이트하고 기존 데이터베이스에 
+ * 새로운 변경사항을 적용하기 위해 SQL 쿼리가 포함된 단일 파일입니다. - https://blog.shovelman.dev/965
  * 그러므로 현재는 src, dist 모두 entities가 핵심사용 부분.
 */
 import { createConnection } from "typeorm";
@@ -48,7 +46,7 @@ app.use(cors({
     /**
      * 만일 allowedHeaders를 지정하지 않으면 기본적으로 요청의 Access-Control-Request-Headers 헤더에 지정된 헤더를 반영합니다 .
      * Authorization 요청 헤더는 서버의 사용자 에이전트임을 증명하는 자격을 포함하라는 뜻으로 필요.
-     * 401 Unauthorized가 MDN에 나온 대표적 예시. / https://developer.mozilla.org/ko/docs/Web/HTTP/Headers/Authorization
+     * 401 Unauthorized 관련하여 MDN에 나온 예시 중 하나. / https://developer.mozilla.org/ko/docs/Web/HTTP/Headers/Authorization
      */
     allowedHeaders: "Content-Type, Authorization",
 }));

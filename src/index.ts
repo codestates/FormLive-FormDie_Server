@@ -52,7 +52,6 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser(process.env.COOKIE_SECRET));
 
 /*
  * expressSession으로 session을 이용할 경우,
@@ -89,6 +88,13 @@ app.use('/suggestion', suggestionRouter);
 app.use('/auth', authRouter);
 
 const port = process.env.PORT || 5000;
+
+/* process.env의 SERVER_URL이 https://yangsikdang.ml:5000 일 때만 https로 작동하고,
+ * 그 이외의 경우에는 일반 http 서버로 작동하도록 해놓았다.
+ * 조금 더 스마트하게 하자면 dev, test, prod 환경을 나누어 그것으로 판별하도록 하는 방법도 있을 것인데,
+ * 이번과 같은 경우는 어차피 localhost에서 http로 테스트하거나 aws에서 yangsikdang.ml 주소로 https로 배포하느냐의 2종류 뿐이기에,
+ * 그 2종류만 커버하면 문제 없도록 단순하게 나누어 보았다.
+ */
 
 if (process.env.SERVER_URL === "https://yangsikdang.ml:5000") {
     const privateKey = fs.readFileSync(

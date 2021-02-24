@@ -6,6 +6,14 @@ import * as fs from 'fs';
 import { createQueryBuilder } from "typeorm";
 import { User } from "../entity/User";
 
+/**
+ * 어노테이션 기반 자바스크립트 AOP 시도.
+ * 이 방식은 TypeORM에 맞게 entity-Model을 연결하여 사용하되, Aspect를 분리하는 방식입니다.
+ * 일견 코드가 더 길어져 보일수는 있으나, Java의 Spring처럼
+ * ORM 엔티티에 모델을 붙이고, 그 모델간에 공통적으로 쓰이는 기능들을 Aspect라 가정하여
+ * 분리한 다음, 다른 곳에서는 해당 API 클래스를 선언한 다음, 해당 메소드들만 가져와서
+ * 사용하여 중복된 코드를 줄이는 방식을 고민했었습니다.
+ */
 // @EntityRepository(User)
 // export class userModel extends Repository<User> {
 

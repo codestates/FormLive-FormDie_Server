@@ -1,3 +1,10 @@
+/*
+ * 서버를 ts-node로 임시로 구동 할 때와, tsc로 컴파일하여 node로 구동 할 때 orm 설정을 각각 나누어서 따로 쓸 수 있도록 설정해놓았습니다.
+ * 말은 거창하지만, 실제 구현한 방법은 간단합니다.
+ * srcConfig라는 객체와 distConfig라는 객체를 각각 만들어서, process.env.TS_NODE의 여부로 ts-node인지 일반 node인지를 판별하여
+ * 3항연산자로 srcConfig를 export 할지 distConfig를 export 할지 결정하도록 코딩하였습니다.
+ */
+
 const srcConfig = {
    "type": "mysql, oracle 등 해당 DB이름을 입력해주시면 됩니다",
    "host": "일반적으로 localhost",

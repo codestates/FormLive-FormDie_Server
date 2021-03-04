@@ -22,6 +22,14 @@ router.get('', async (req, res, next) => {
   }
 
   try {
+
+  /*
+   * typeORM에서 쿼리시 조건을 추가하는 여러가지 방법이 있다.
+   * 가장 기본적인 where를 쓰는 방법, (38번째 줄)
+   * join시 미리 한 번 조건으로 걸러서 join 하는 방법, (37번째 줄)
+   * 그리고 Brackets로 묶어서 and나 or 조건을 쓰는 방법이 있다. (39~41번째 줄)
+   * 각 상황에 맞춰 쓰면 어지간한 쿼리 조건은 한 번의 쿼리로 처리 가능할 것이다.   
+   */
     const rawGroups = await getRepository(Group)
       .createQueryBuilder('group')
       .leftJoinAndSelect('group.relations', 'relations')

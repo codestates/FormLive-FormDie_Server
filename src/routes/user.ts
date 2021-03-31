@@ -165,9 +165,10 @@ router.delete('/', async (req, res, next) => {
 
 /**
  * 회원정보 수정하기
- * test1
- * req: 작성해주세요.
- * res: 작성해주세요.
+ * : 이름과 비밀번호를 변경하는 API 입니다.
+ *   2가지 변수의 유무에 따라 분기점은 3+1가지 경우의 수가 있습니다.
+ * req: req.session.passport.user , req.body.name , req.body.password
+ * res: Object{ data: null, message: "edit success" }
  */
 router.patch('', async (req, res, next) => {
   try {
@@ -278,6 +279,15 @@ router.post('/signin', async (req, res, next) => {
   })(req, res, next);
 });
 
+/**
+ * 로그아웃
+ * req: logout()
+ * res: x
+ * http://www.passportjs.org/docs/logout/
+ * 로그인 세션을 종료해야 하는 모든 경로에서 호출가능한 .logout() 사용
+ * 이 호출 자체로 유저 property와 session이 지워지지만
+ * 로컬, OAuth 혼합을 고려하여 꼼꼼하게 세션, 쿠키 분쇄 코드 적용.
+ */
 router.post('/signout', async (req, res, next) => {
   req.logout();
   if (req.session) {

@@ -279,6 +279,15 @@ router.post('/signin', async (req, res, next) => {
   })(req, res, next);
 });
 
+/**
+ * 로그아웃
+ * req: logout()
+ * res: x
+ * http://www.passportjs.org/docs/logout/
+ * 로그인 세션을 종료해야 하는 모든 경로에서 호출가능한 .logout() 사용
+ * 이 호출 자체로 유저 property와 session이 지워지지만
+ * 로컬, OAuth 혼합을 고려하여 꼼꼼하게 세션, 쿠키 분쇄 코드 적용.
+ */
 router.post('/signout', async (req, res, next) => {
   req.logout();
   if (req.session) {
